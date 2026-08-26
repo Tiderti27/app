@@ -5,8 +5,10 @@ create extension if not exists postgis;
 create extension if not exists pgcrypto;
 
 -- 4.1 Users
+-- id ist bewusst nicht auto-generiert: er wird 1:1 aus auth.users uebernommen,
+-- siehe Trigger public.handle_new_user() in 20260826000100_auth_profile_sync.sql
 create table users (
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key references auth.users(id) on delete cascade,
   email text unique not null,
   username text unique not null,
   display_name text,

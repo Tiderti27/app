@@ -1,3 +1,5 @@
+import { AuthGate } from "@/components/auth-gate";
+
 // TODO: echte Kennzahlen via supabase.from(...) laden
 // (Profilaufrufe, Merkliste-Saves, aktive Aktionen, Einloesungen diese Woche).
 const STATS = [
@@ -9,13 +11,15 @@ const STATS = [
 
 export default function DashboardPage() {
   return (
-    <main className="grid">
-      {STATS.map((stat) => (
-        <div key={stat.label} className="card">
-          <div className="stat-label">{stat.label}</div>
-          <div className="stat-value">{stat.value}</div>
-        </div>
-      ))}
-    </main>
+    <AuthGate>
+      <main className="grid">
+        {STATS.map((stat) => (
+          <div key={stat.label} className="card">
+            <div className="stat-label">{stat.label}</div>
+            <div className="stat-value">{stat.value}</div>
+          </div>
+        ))}
+      </main>
+    </AuthGate>
   );
 }

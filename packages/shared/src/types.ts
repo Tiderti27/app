@@ -55,6 +55,11 @@ export interface Spot {
   updated_at: string;
 }
 
+// Rueckgabe der spots_nearby-RPC (supabase/migrations/20260826000200_spots_geo.sql)
+export interface SpotWithDistance extends Spot {
+  distance_meters: number;
+}
+
 export interface Rating {
   id: string;
   spot_id: string;

@@ -1,17 +1,33 @@
-import { useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import { Link } from "expo-router";
 import { COLORS, SPOT_CATEGORIES, scoreColor, type SpotCategory } from "@spot/shared";
-import { MOCK_SPOTS } from "@/lib/mock-data";
+import { useNearbySpots } from "@/hooks/use-nearby-spots";
 
-// TODO: Kartenansicht (react-native-maps) statt Liste, Umkreissuche via
-// supabase.rpc gegen die PostGIS-Funktionen aus docs/spec.md Abschnitt 11.
+type ViewMode = "map" | "list";
+type SortMode = "score" | "distance" | "newest";
+
+const SORT_OPTIONS: { value: SortMode; label: string }[] = [
+  { value: "distance", label: "Entfernung" },
+  { value: "score", label: "Score" },
+  { value: "newest", label: "Neueste" },
+];
+
 export default function MapScreen() {
   const [activeCategory, setActiveCategory] = useState<SpotCategory | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("map");
+  const [sortMode, setSortMode] = useState<SortMode>("distance");
 
-  const spots = activeCategory
-    ? MOCK_SPOTS.filter((spot) => spot.category === activeCategory)
-    : MOCK_SPOTS;
+  const { spots, location, loading, error, refresh } = useNearbySpots(activeCategory);
+
+  const sortedSpots = useMemo(() => {
+    const copy = [...spots];
+    if (sortMode === "score") copy.sort((a, b) => b.score - a.score);
+    else if (sortMode === "newest") copy.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    else copy.sort((a, b) => a.distance_meters - b.distance_meters);
+    return copy;
+  }, [spots, sortMode]);
 
   return (
     <View style={styles.container}>
@@ -34,24 +50,102 @@ export default function MapScreen() {
         }}
       />
 
-      <FlatList
-        data={spots}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <Link href={`/spot/${item.id}`} asChild>
-            <Pressable style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={[styles.cardScore, { color: scoreColor(item.score) }]}>
-                  {item.score.toFixed(0)}
+      <View style={styles.toolbar}>
+        <View style={styles.toggleGroup}>
+          <Pressable
+            onPress={() => setViewMode("map")}
+            style={[styles.toggleButton, viewMode === "map" && styles.toggleButtonActive]}
+          >
+            <Text style={[styles.toggleText, viewMode === "map" && styles.toggleTextActive]}>Karte</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setViewMode("list")}
+            style={[styles.toggleButton, viewMode === "list" && styles.toggleButtonActive]}
+          >
+            <Text style={[styles.toggleText, viewMode === "list" && styles.toggleTextActive]}>Liste</Text>
+          </Pressable>
+        </View>
+
+        {viewMode === "list" && (
+          <View style={styles.toggleGroup}>
+            {SORT_OPTIONS.map((option) => (
+              <Pressable
+                key={option.value}
+                onPress={() => setSortMode(option.value)}
+                style={[styles.toggleButton, sortMode === option.value && styles.toggleButtonActive]}
+              >
+                <Text style={[styles.toggleText, sortMode === option.value && styles.toggleTextActive]}>
+                  {option.label}
                 </Text>
-              </View>
-              <Text style={styles.cardSubtitle}>{item.address}</Text>
-            </Pressable>
-          </Link>
+              </Pressable>
+            ))}
+          </View>
         )}
-      />
+      </View>
+
+      {loading && (
+        <View style={styles.centered}>
+          <ActivityIndicator color={COLORS.accentPrimary} />
+        </View>
+      )}
+
+      {!loading && error && (
+        <View style={styles.centered}>
+          <Text style={styles.error}>{error}</Text>
+          <Pressable style={styles.retryButton} onPress={refresh}>
+            <Text style={styles.retryText}>Erneut versuchen</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {!loading && !error && viewMode === "map" && location && (
+        <MapView
+          provider={PROVIDER_DEFAULT}
+          style={styles.map}
+          initialRegion={{
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }}
+          showsUserLocation
+        >
+          {sortedSpots.map((spot) => (
+            <Marker
+              key={spot.id}
+              coordinate={{ latitude: spot.latitude, longitude: spot.longitude }}
+              title={spot.name}
+              description={`Score ${spot.score.toFixed(0)}`}
+              pinColor={scoreColor(spot.score)}
+              onCalloutPress={() => {}}
+            />
+          ))}
+        </MapView>
+      )}
+
+      {!loading && !error && viewMode === "list" && (
+        <FlatList
+          data={sortedSpots}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={<Text style={styles.emptyText}>Keine Spots in deiner Naehe gefunden.</Text>}
+          renderItem={({ item }) => (
+            <Link href={`/spot/${item.id}`} asChild>
+              <Pressable style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardTitle}>{item.name}</Text>
+                  <Text style={[styles.cardScore, { color: scoreColor(item.score) }]}>
+                    {item.score.toFixed(0)}
+                  </Text>
+                </View>
+                <Text style={styles.cardSubtitle}>
+                  {item.address} · {(item.distance_meters / 1000).toFixed(1)} km
+                </Text>
+              </Pressable>
+            </Link>
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -71,7 +165,32 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: COLORS.accentPrimary, borderColor: COLORS.accentPrimary },
   chipText: { color: COLORS.textSecondary, fontWeight: "600" },
   chipTextActive: { color: COLORS.textPrimary },
+  toolbar: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
+  toggleGroup: { flexDirection: "row", gap: 6 },
+  toggleButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: COLORS.bgCard,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  toggleButtonActive: { backgroundColor: COLORS.accentPrimary, borderColor: COLORS.accentPrimary },
+  toggleText: { color: COLORS.textSecondary, fontSize: 12, fontWeight: "600" },
+  toggleTextActive: { color: COLORS.textPrimary },
+  centered: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  error: { color: COLORS.scoreLow },
+  retryButton: {
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  retryText: { color: COLORS.textPrimary },
+  map: { flex: 1 },
   list: { padding: 12, gap: 10 },
+  emptyText: { color: COLORS.textSecondary, textAlign: "center", marginTop: 24 },
   card: {
     backgroundColor: COLORS.bgCard,
     borderRadius: 12,

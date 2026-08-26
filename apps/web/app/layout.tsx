@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { AuthProvider } from "@/context/auth-context";
+import { NavBar } from "@/components/nav-bar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,26 +8,14 @@ export const metadata: Metadata = {
   description: "Profil, Aktionen und Statistiken fuer dein Spot-Business-Profil",
 };
 
-const NAV_ITEMS = [
-  { href: "/", label: "Dashboard" },
-  { href: "/profile", label: "Profil" },
-  { href: "/promotions", label: "Aktionen" },
-  { href: "/scanner", label: "QR-Scanner" },
-  { href: "/subscription", label: "Abo" },
-];
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de">
       <body>
-        <nav className="nav">
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        {children}
+        <AuthProvider>
+          <NavBar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
