@@ -7,7 +7,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0f0f14",
-    "icon": "./assets/icon.png",
     "splash": {
       "backgroundColor": "#0f0f14"
     },
