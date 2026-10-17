@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { COLORS } from "@spot/shared";
+import { useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import type { ColorPalette } from "@spot/shared";
 import { useAuth } from "@/context/auth-context";
+import { useTheme } from "@/context/theme-context";
 import { supabase } from "@/lib/supabase";
 
 export default function ProfileScreen() {
   const { session, signOut } = useAuth();
+  const { colors, mode, toggleMode } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,8 +23,26 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{username ?? session?.user.email}</Text>
-      <Text style={styles.text}>{session?.user.email}</Text>
+      <View style={styles.header}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{(username ?? session?.user.email ?? "?").charAt(0).toUpperCase()}</Text>
+        </View>
+        <Text style={styles.title}>{username ?? session?.user.email}</Text>
+        <Text style={styles.text}>{session?.user.email}</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Darstellung</Text>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Helles Design</Text>
+          <Switch
+            value={mode === "light"}
+            onValueChange={toggleMode}
+            trackColor={{ false: colors.border, true: colors.accentPrimary }}
+            thumbColor="#ffffff"
+          />
+        </View>
+      </View>
 
       <Pressable style={styles.button} onPress={signOut}>
         <Text style={styles.buttonText}>Abmelden</Text>
@@ -30,18 +51,53 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bgPrimary, alignItems: "center", justifyContent: "center", gap: 8, padding: 24 },
-  title: { color: COLORS.textPrimary, fontSize: 20, fontWeight: "700" },
-  text: { color: COLORS.textSecondary },
-  button: {
-    marginTop: 24,
-    backgroundColor: COLORS.bgCard,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  buttonText: { color: COLORS.scoreLow, fontWeight: "700" },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bgPrimary, padding: 24, gap: 28 },
+    header: { alignItems: "center", gap: 6, marginTop: 24 },
+    avatar: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colors.accentPrimary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 6,
+    },
+    avatarText: { color: "#ffffff", fontSize: 24, fontWeight: "800" },
+    title: { color: colors.textPrimary, fontSize: 18, fontWeight: "700" },
+    text: { color: colors.textSecondary },
+    section: { gap: 10 },
+    sectionLabel: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0.04,
+      textTransform: "uppercase",
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: colors.bgCard,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    rowLabel: { color: colors.textPrimary, fontSize: 14, fontWeight: "600" },
+    button: {
+      marginTop: "auto",
+      alignSelf: "center",
+      backgroundColor: colors.bgCard,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 10,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      marginBottom: 12,
+    },
+    buttonText: { color: colors.scoreLow, fontWeight: "700" },
+  });
+}

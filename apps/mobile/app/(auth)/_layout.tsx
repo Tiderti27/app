@@ -1,13 +1,15 @@
 import { Stack } from "expo-router";
-import { COLORS } from "@spot/shared";
+import { useTheme } from "@/context/theme-context";
 
 export default function AuthLayout() {
+  const { colors } = useTheme();
+
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: COLORS.bgSecondary },
-        headerTintColor: COLORS.textPrimary,
-        contentStyle: { backgroundColor: COLORS.bgPrimary },
+        headerStyle: { backgroundColor: colors.bgSecondary },
+        headerTintColor: colors.textPrimary,
+        contentStyle: { backgroundColor: colors.bgPrimary },
       }}
     >
       <Stack.Screen name="login" options={{ title: "Anmelden" }} />

@@ -10,26 +10,69 @@ export const SPOT_CATEGORIES: { value: SpotCategory; label: string }[] = [
   { value: "culture", label: "Culture" },
 ];
 
-// docs/spec.md Abschnitt 10 - Design-Richtlinien
-export const COLORS = {
-  bgPrimary: "#0f0f14",
-  bgSecondary: "#1a1a24",
-  bgCard: "#22222e",
+export type ThemeMode = "light" | "dark";
+
+export interface ColorPalette {
+  bgPrimary: string;
+  bgSecondary: string;
+  bgCard: string;
+  accentPrimary: string;
+  accentSecondary: string;
+  scoreColor: string;
+  scoreHigh: string;
+  scoreMid: string;
+  scoreLow: string;
+  textPrimary: string;
+  textSecondary: string;
+  border: string;
+}
+
+// docs/spec.md Abschnitt 10 - Design-Richtlinien (Dark, Standard)
+export const DARK_COLORS: ColorPalette = {
+  bgPrimary: "#0b0b10",
+  bgSecondary: "#16161f",
+  bgCard: "#16161f",
   accentPrimary: "#8b5cf6",
   accentSecondary: "#a78bfa",
   scoreColor: "#fbbf24",
-  scoreHigh: "#22c55e",
+  scoreHigh: "#4ade80",
   scoreMid: "#fbbf24",
-  scoreLow: "#ef4444",
-  textPrimary: "#f8fafc",
-  textSecondary: "#94a3b8",
-  border: "#334155",
-} as const;
+  scoreLow: "#fb7185",
+  textPrimary: "#f5f4f7",
+  textSecondary: "#9c99ab",
+  border: "#27262f",
+};
 
-export function scoreColor(score: number): string {
-  if (score >= 80) return COLORS.scoreHigh;
-  if (score >= 50) return COLORS.scoreMid;
-  return COLORS.scoreLow;
+// Helle Variante: gleiche Markenfarben, fuer ausreichenden Kontrast auf
+// weissem Grund nachjustiert (reines Dark-Gold/-Gruen waere auf Weiss zu
+// kontrastarm).
+export const LIGHT_COLORS: ColorPalette = {
+  bgPrimary: "#ffffff",
+  bgSecondary: "#f5f4f8",
+  bgCard: "#f9f8fb",
+  accentPrimary: "#7c3aed",
+  accentSecondary: "#8b5cf6",
+  scoreColor: "#d97706",
+  scoreHigh: "#16a34a",
+  scoreMid: "#d97706",
+  scoreLow: "#dc2626",
+  textPrimary: "#18181b",
+  textSecondary: "#6b6878",
+  border: "#e4e2ea",
+};
+
+export const THEMES: Record<ThemeMode, ColorPalette> = {
+  dark: DARK_COLORS,
+  light: LIGHT_COLORS,
+};
+
+// Rueckwaertskompatibel fuer Code, der noch den statischen Default erwartet.
+export const COLORS = DARK_COLORS;
+
+export function scoreColor(score: number, colors: ColorPalette = DARK_COLORS): string {
+  if (score >= 80) return colors.scoreHigh;
+  if (score >= 50) return colors.scoreMid;
+  return colors.scoreLow;
 }
 
 // docs/spec.md Abschnitt 8 - Laden-Abos

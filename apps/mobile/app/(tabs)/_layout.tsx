@@ -1,15 +1,17 @@
 import { Tabs } from "expo-router";
-import { COLORS } from "@spot/shared";
+import { useTheme } from "@/context/theme-context";
 
 export default function TabsLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: COLORS.bgSecondary },
-        headerTintColor: COLORS.textPrimary,
-        tabBarStyle: { backgroundColor: COLORS.bgSecondary, borderTopColor: COLORS.border },
-        tabBarActiveTintColor: COLORS.accentPrimary,
-        tabBarInactiveTintColor: COLORS.textSecondary,
+        headerStyle: { backgroundColor: colors.bgSecondary },
+        headerTintColor: colors.textPrimary,
+        tabBarStyle: { backgroundColor: colors.bgSecondary, borderTopColor: colors.border },
+        tabBarActiveTintColor: colors.accentPrimary,
+        tabBarInactiveTintColor: colors.textSecondary,
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Karte" }} />

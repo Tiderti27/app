@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { COLORS, scoreColor, type VideoPlatform } from "@spot/shared";
+import { scoreColor, type ColorPalette, type VideoPlatform } from "@spot/shared";
 import { useSpotDetail } from "@/hooks/use-spot-detail";
+import { useTheme } from "@/context/theme-context";
 
 const RATING_PRESETS = [60, 75, 85, 95, 100];
 
@@ -14,13 +15,15 @@ const PLATFORM_LABEL: Record<VideoPlatform, string> = {
 
 export default function SpotDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { spot, videos, myRating, saved, loading, submitRating, toggleSave } = useSpotDetail(id);
   const [ratingOpen, setRatingOpen] = useState(false);
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={COLORS.accentPrimary} />
+        <ActivityIndicator color={colors.accentPrimary} />
       </View>
     );
   }
@@ -43,7 +46,7 @@ export default function SpotDetailScreen() {
       </View>
 
       <View style={styles.scoreRow}>
-        <Text style={[styles.score, { color: scoreColor(spot.score) }]}>{spot.score.toFixed(0)}</Text>
+        <Text style={[styles.score, { color: scoreColor(spot.score, colors) }]}>{spot.score.toFixed(0)}</Text>
         <Text style={styles.scoreCount}>{spot.score_count} Bewertungen</Text>
       </View>
 
@@ -99,49 +102,51 @@ export default function SpotDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bgPrimary },
-  content: { padding: 16, gap: 8 },
-  centered: { flex: 1, backgroundColor: COLORS.bgPrimary, alignItems: "center", justifyContent: "center" },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  title: { color: COLORS.textPrimary, fontSize: 24, fontWeight: "800", flexShrink: 1 },
-  heart: { color: COLORS.accentPrimary, fontSize: 28 },
-  scoreRow: { flexDirection: "row", alignItems: "baseline", gap: 8 },
-  score: { fontSize: 40, fontWeight: "900" },
-  scoreCount: { color: COLORS.textSecondary },
-  text: { color: COLORS.textSecondary },
-  description: { color: COLORS.textPrimary, marginTop: 8, lineHeight: 20 },
-  ratingSection: { marginTop: 16, gap: 10 },
-  myRating: { color: COLORS.scoreHigh, fontWeight: "600" },
-  primaryButton: {
-    backgroundColor: COLORS.accentPrimary,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  primaryButtonText: { color: COLORS.textPrimary, fontWeight: "700" },
-  presetRow: { flexDirection: "row", gap: 8 },
-  presetButton: {
-    flex: 1,
-    backgroundColor: COLORS.bgCard,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  presetText: { color: COLORS.textPrimary, fontWeight: "700" },
-  videoSection: { marginTop: 24, gap: 8 },
-  sectionTitle: { color: COLORS.textPrimary, fontSize: 16, fontWeight: "700" },
-  videoCard: {
-    backgroundColor: COLORS.bgCard,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    gap: 4,
-  },
-  videoPlatform: { color: COLORS.accentSecondary, fontSize: 12, fontWeight: "700" },
-  videoTitle: { color: COLORS.textPrimary },
-  cooperationBadge: { color: COLORS.scoreMid, fontSize: 12, fontWeight: "600" },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bgPrimary },
+    content: { padding: 16, gap: 8 },
+    centered: { flex: 1, backgroundColor: colors.bgPrimary, alignItems: "center", justifyContent: "center" },
+    headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    title: { color: colors.textPrimary, fontSize: 24, fontWeight: "800", flexShrink: 1 },
+    heart: { color: colors.accentPrimary, fontSize: 28 },
+    scoreRow: { flexDirection: "row", alignItems: "baseline", gap: 8 },
+    score: { fontSize: 40, fontWeight: "900" },
+    scoreCount: { color: colors.textSecondary },
+    text: { color: colors.textSecondary },
+    description: { color: colors.textPrimary, marginTop: 8, lineHeight: 20 },
+    ratingSection: { marginTop: 16, gap: 10 },
+    myRating: { color: colors.scoreHigh, fontWeight: "600" },
+    primaryButton: {
+      backgroundColor: colors.accentPrimary,
+      borderRadius: 10,
+      paddingVertical: 14,
+      alignItems: "center",
+    },
+    primaryButtonText: { color: "#ffffff", fontWeight: "700" },
+    presetRow: { flexDirection: "row", gap: 8 },
+    presetButton: {
+      flex: 1,
+      backgroundColor: colors.bgCard,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 10,
+      paddingVertical: 12,
+      alignItems: "center",
+    },
+    presetText: { color: colors.textPrimary, fontWeight: "700" },
+    videoSection: { marginTop: 24, gap: 8 },
+    sectionTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "700" },
+    videoCard: {
+      backgroundColor: colors.bgCard,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 10,
+      padding: 12,
+      gap: 4,
+    },
+    videoPlatform: { color: colors.accentSecondary, fontSize: 12, fontWeight: "700" },
+    videoTitle: { color: colors.textPrimary },
+    cooperationBadge: { color: colors.scoreMid, fontSize: 12, fontWeight: "600" },
+  });
+}

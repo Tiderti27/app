@@ -2,20 +2,22 @@ import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, View } from "react-native";
-import { COLORS } from "@spot/shared";
 import { AuthProvider, useAuth } from "@/context/auth-context";
+import { ThemeProvider, useTheme } from "@/context/theme-context";
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <StatusBar style="light" />
-      <RootNavigator />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
 function RootNavigator() {
   const { session, loading } = useAuth();
+  const { colors, mode } = useTheme();
   const segments = useSegments();
   const router = useRouter();
 
@@ -33,23 +35,27 @@ function RootNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: COLORS.bgPrimary, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator color={COLORS.accentPrimary} />
+      <View style={{ flex: 1, backgroundColor: colors.bgPrimary, alignItems: "center", justifyContent: "center" }}>
+        <StatusBar style={mode === "light" ? "dark" : "light"} />
+        <ActivityIndicator color={colors.accentPrimary} />
       </View>
     );
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: COLORS.bgSecondary },
-        headerTintColor: COLORS.textPrimary,
-        contentStyle: { backgroundColor: COLORS.bgPrimary },
-      }}
-    >
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="spot/[id]" options={{ title: "Spot" }} />
-    </Stack>
+    <>
+      <StatusBar style={mode === "light" ? "dark" : "light"} />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.bgSecondary },
+          headerTintColor: colors.textPrimary,
+          contentStyle: { backgroundColor: colors.bgPrimary },
+        }}
+      >
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="spot/[id]" options={{ title: "Spot" }} />
+      </Stack>
+    </>
   );
 }
