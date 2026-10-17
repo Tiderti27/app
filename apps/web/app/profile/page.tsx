@@ -139,16 +139,16 @@ function ProfileForm() {
 
   if (loading) {
     return (
-      <main className="grid">
+      <main className="page">
         <div className="card">Laden...</div>
       </main>
     );
   }
 
   return (
-    <main className="grid">
+    <main className="page">
       <form className="card form" onSubmit={handleSubmit} style={{ maxWidth: 560 }}>
-        <h1 style={{ margin: 0 }}>{spotId ? "Profil bearbeiten" : "Profil anlegen"}</h1>
+        <h1 style={{ margin: 0, fontSize: 20 }}>{spotId ? "Profil bearbeiten" : "Profil anlegen"}</h1>
 
         <label>
           Name

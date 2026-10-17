@@ -5,10 +5,19 @@ import { AuthGate } from "@/components/auth-gate";
 export default function ScannerPage() {
   return (
     <AuthGate>
-      <main className="grid">
-        <div className="card">
-          <div className="stat-label">QR-Code Scanner</div>
-          <p>Scanner noch nicht verbunden.</p>
+      <main className="page">
+        <div>
+          <h1 className="page-title">QR-Scanner</h1>
+          <p className="page-subtitle">Rabattcodes deiner Kunden einlösen</p>
+        </div>
+        <div className="card" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: 48, textAlign: "center" }}>
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <path d="M14 14h3v3h-3zM19 14h2M14 19h2M19 19h2" />
+          </svg>
+          <p style={{ margin: 0, color: "var(--text-secondary)" }}>Scanner noch nicht verbunden.</p>
         </div>
       </main>
     </AuthGate>

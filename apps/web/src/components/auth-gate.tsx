@@ -17,7 +17,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   if (loading || !session) {
     return (
-      <main className="grid">
+      <main className="page">
         <div className="card">Laden...</div>
       </main>
     );
