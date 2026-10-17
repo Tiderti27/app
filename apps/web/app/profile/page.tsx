@@ -147,89 +147,102 @@ function ProfileForm() {
 
   return (
     <main className="page">
-      <form className="card form" onSubmit={handleSubmit} style={{ maxWidth: 560 }}>
-        <h1 style={{ margin: 0, fontSize: 20 }}>{spotId ? "Profil bearbeiten" : "Profil anlegen"}</h1>
+      <div>
+        <h1 className="page-title">{spotId ? "Profil bearbeiten" : "Profil anlegen"}</h1>
+        <p className="page-subtitle">Diese Angaben sehen Nutzer:innen auf deinem Spot-Profil.</p>
+      </div>
 
-        <label>
-          Name
-          <input required value={form.name} onChange={(e) => updateField("name", e.target.value)} />
-        </label>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 560 }}>
+        <div className="card form-section">
+          <span className="form-section-title">Grunddaten</span>
 
-        <label>
-          Beschreibung
-          <textarea
-            rows={3}
-            value={form.description}
-            onChange={(e) => updateField("description", e.target.value)}
-          />
-        </label>
-
-        <label>
-          Kategorie
-          <select value={form.category} onChange={(e) => updateField("category", e.target.value as SpotCategory)}>
-            {SPOT_CATEGORIES.map((cat) => (
-              <option key={cat.value} value={cat.value}>
-                {cat.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Adresse
-          <input required value={form.address} onChange={(e) => updateField("address", e.target.value)} />
-        </label>
-
-        <label>
-          Stadt
-          <input required value={form.city} onChange={(e) => updateField("city", e.target.value)} />
-        </label>
-
-        <div className="form-row">
           <label>
-            Breitengrad
-            <input
-              required
-              type="number"
-              step="any"
-              value={form.latitude}
-              onChange={(e) => updateField("latitude", e.target.value)}
+            Name
+            <input required value={form.name} onChange={(e) => updateField("name", e.target.value)} />
+          </label>
+
+          <label>
+            Beschreibung
+            <textarea
+              rows={3}
+              value={form.description}
+              onChange={(e) => updateField("description", e.target.value)}
             />
           </label>
+
           <label>
-            Laengengrad
-            <input
-              required
-              type="number"
-              step="any"
-              value={form.longitude}
-              onChange={(e) => updateField("longitude", e.target.value)}
-            />
+            Kategorie
+            <select value={form.category} onChange={(e) => updateField("category", e.target.value as SpotCategory)}>
+              {SPOT_CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
-        <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-          Bis zur Google-Places-Anbindung (docs/spec.md Abschnitt 9) manuell eintragen, z.B. per Rechtsklick
-          auf Google Maps.
-        </span>
 
-        <fieldset style={{ border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
-          <legend style={{ padding: "0 6px", color: "var(--text-secondary)", fontSize: 13 }}>Oeffnungszeiten</legend>
-          {WEEKDAYS.map((day) => (
-            <div className="form-row" key={day.key} style={{ marginBottom: 8 }}>
-              <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{day.label}</span>
+        <div className="card form-section">
+          <span className="form-section-title">Standort</span>
+
+          <label>
+            Adresse
+            <input required value={form.address} onChange={(e) => updateField("address", e.target.value)} />
+          </label>
+
+          <label>
+            Stadt
+            <input required value={form.city} onChange={(e) => updateField("city", e.target.value)} />
+          </label>
+
+          <div className="form-row">
+            <label>
+              Breitengrad
               <input
-                placeholder="z.B. 09:00-18:00"
-                value={form.openingHours[day.key] ?? ""}
-                onChange={(e) => updateHours(day.key, e.target.value)}
+                required
+                type="number"
+                step="any"
+                value={form.latitude}
+                onChange={(e) => updateField("latitude", e.target.value)}
               />
-            </div>
-          ))}
-        </fieldset>
+            </label>
+            <label>
+              Laengengrad
+              <input
+                required
+                type="number"
+                step="any"
+                value={form.longitude}
+                onChange={(e) => updateField("longitude", e.target.value)}
+              />
+            </label>
+          </div>
+          <span className="form-section-hint">
+            Bis zur Google-Places-Anbindung (docs/spec.md Abschnitt 9) manuell eintragen, z.B. per Rechtsklick auf
+            Google Maps.
+          </span>
+        </div>
+
+        <div className="card form-section">
+          <span className="form-section-title">Öffnungszeiten</span>
+          <div className="hours-grid">
+            {WEEKDAYS.map((day) => (
+              <div className="hours-row" key={day.key}>
+                <span>{day.label}</span>
+                <input
+                  placeholder="z.B. 09:00-18:00"
+                  value={form.openingHours[day.key] ?? ""}
+                  onChange={(e) => updateHours(day.key, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
 
         {error && <span className="error-text">{error}</span>}
         {saved && <span className="success-text">Gespeichert.</span>}
 
-        <button className="button-primary" type="submit" disabled={saving}>
+        <button className="button-primary" type="submit" disabled={saving} style={{ alignSelf: "flex-start", minWidth: 140 }}>
           {saving ? "..." : "Speichern"}
         </button>
       </form>

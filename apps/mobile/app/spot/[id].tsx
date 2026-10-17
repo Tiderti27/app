@@ -54,18 +54,20 @@ export default function SpotDetailScreen() {
       </View>
 
       <View style={styles.body}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>{spot.name}</Text>
-          <View style={styles.categoryChip}>
-            <CategoryIcon category={spot.category} size={12} color={colors.textSecondary} />
-            <Text style={styles.categoryChipText}>{spot.category}</Text>
+        <View style={styles.infoSection}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{spot.name}</Text>
+            <View style={styles.categoryChip}>
+              <CategoryIcon category={spot.category} size={12} color={colors.textSecondary} />
+              <Text style={styles.categoryChipText}>{spot.category}</Text>
+            </View>
           </View>
-        </View>
 
-        <Text style={styles.text}>
-          {spot.address}, {spot.city} · {spot.score_count} Bewertungen
-        </Text>
-        {spot.description ? <Text style={styles.description}>{spot.description}</Text> : null}
+          <Text style={styles.text}>
+            {spot.address}, {spot.city} · {spot.score_count} Bewertungen
+          </Text>
+          {spot.description ? <Text style={styles.description}>{spot.description}</Text> : null}
+        </View>
 
         <View style={styles.ratingSection}>
           {myRating === null ? (
@@ -150,7 +152,8 @@ function createStyles(colors: ColorPalette, heroBg: string) {
     heroButtonLeft: { left: 18 },
     heroButtonRight: { right: 18 },
     heroScore: { position: "absolute", left: 20, bottom: -26 },
-    body: { padding: 20, paddingTop: 38, gap: 8 },
+    body: { padding: 20, paddingTop: 38, gap: 22 },
+    infoSection: { gap: 8 },
     titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
     title: { color: colors.textPrimary, fontSize: 22, fontWeight: "800", flexShrink: 1 },
     categoryChip: {
@@ -167,7 +170,14 @@ function createStyles(colors: ColorPalette, heroBg: string) {
     categoryChipText: { color: colors.textSecondary, fontSize: 11.5, fontWeight: "700", textTransform: "capitalize" },
     text: { color: colors.textSecondary, fontSize: 13 },
     description: { color: colors.textPrimary, marginTop: 4, lineHeight: 20, fontSize: 13.5 },
-    ratingSection: { marginTop: 18, gap: 10 },
+    ratingSection: {
+      gap: 12,
+      backgroundColor: colors.bgCard,
+      borderColor: colors.border,
+      borderWidth: 1.5,
+      borderRadius: 16,
+      padding: 16,
+    },
     ratingHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     ratingHeaderLabel: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
     myRating: { color: colors.scoreHigh, fontWeight: "700", fontSize: 12 },
@@ -181,7 +191,7 @@ function createStyles(colors: ColorPalette, heroBg: string) {
     presetRow: { flexDirection: "row", gap: 8 },
     presetButton: {
       flex: 1,
-      backgroundColor: colors.bgCard,
+      backgroundColor: colors.bgElevated,
       borderColor: colors.border,
       borderWidth: 1,
       borderRadius: 11,
@@ -191,7 +201,7 @@ function createStyles(colors: ColorPalette, heroBg: string) {
     presetButtonActive: { backgroundColor: colors.accentPrimary, borderColor: colors.accentPrimary },
     presetText: { color: colors.textPrimary, fontWeight: "700" },
     presetTextActive: { color: "#ffffff" },
-    videoSection: { marginTop: 24, gap: 10 },
+    videoSection: { gap: 10 },
     sectionTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: "700" },
     videoCard: { width: 120, gap: 6 },
     videoThumb: {
@@ -208,7 +218,6 @@ function createStyles(colors: ColorPalette, heroBg: string) {
     videoTitle: { color: colors.textPrimary, fontSize: 12 },
     cooperationBadge: { color: colors.scoreMid, fontSize: 11, fontWeight: "600" },
     hoursRow: {
-      marginTop: 20,
       flexDirection: "row",
       alignItems: "center",
       gap: 8,

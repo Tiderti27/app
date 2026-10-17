@@ -5,7 +5,7 @@ import { Link, useRouter } from "expo-router";
 import { SPOT_CATEGORIES, scoreColor, type ColorPalette, type SpotCategory } from "@spot/shared";
 import { useNearbySpots } from "@/hooks/use-nearby-spots";
 import { useTheme } from "@/context/theme-context";
-import { CategoryIcon, PinIcon, UserIcon } from "@/components/icons";
+import { CategoryIcon, PinIcon, SortIcon, UserIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
 
 type ViewMode = "map" | "list";
@@ -16,6 +16,11 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "score", label: "Score" },
   { value: "newest", label: "Neueste" },
 ];
+
+function nextSortMode(current: SortMode): SortMode {
+  const index = SORT_OPTIONS.findIndex((option) => option.value === current);
+  return SORT_OPTIONS[(index + 1) % SORT_OPTIONS.length].value;
+}
 
 export default function MapScreen() {
   const { colors } = useTheme();
@@ -58,10 +63,10 @@ export default function MapScreen() {
           return (
             <Pressable
               onPress={() => setActiveCategory(active ? null : item.value)}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
             >
               <CategoryIcon category={item.value} size={14} color={active ? "#ffffff" : colors.textSecondary} />
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>{item.label}</Text>
+              {active && <Text style={styles.chipTextActive}>{item.label}</Text>}
             </Pressable>
           );
         }}
@@ -84,19 +89,12 @@ export default function MapScreen() {
         </View>
 
         {viewMode === "list" && (
-          <View style={styles.toggleGroup}>
-            {SORT_OPTIONS.map((option) => (
-              <Pressable
-                key={option.value}
-                onPress={() => setSortMode(option.value)}
-                style={[styles.toggleButton, sortMode === option.value && styles.toggleButtonActive]}
-              >
-                <Text style={[styles.toggleText, sortMode === option.value && styles.toggleTextActive]}>
-                  {option.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <Pressable style={styles.sortButton} onPress={() => setSortMode(nextSortMode(sortMode))}>
+            <SortIcon size={13} color={colors.textSecondary} />
+            <Text style={styles.sortButtonText}>
+              {SORT_OPTIONS.find((option) => option.value === sortMode)?.label}
+            </Text>
+          </Pressable>
         )}
       </View>
 
@@ -181,7 +179,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "space-between",
       paddingHorizontal: 20,
       paddingTop: 20,
-      paddingBottom: 14,
+      paddingBottom: 18,
     },
     brandRow: { flexDirection: "row", alignItems: "center", gap: 7 },
     brand: { fontSize: 17, fontWeight: "800", color: colors.textPrimary },
@@ -195,23 +193,39 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
       justifyContent: "center",
     },
-    filterRow: { paddingHorizontal: 20, paddingBottom: 14, gap: 8 },
+    filterRow: { paddingHorizontal: 20, paddingBottom: 18, gap: 8 },
     chip: {
       flexDirection: "row",
       alignItems: "center",
       gap: 6,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-      borderRadius: 999,
-      backgroundColor: colors.bgCard,
       marginRight: 8,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    chipActive: { backgroundColor: colors.accentPrimary, borderColor: colors.accentPrimary },
-    chipText: { color: colors.textSecondary, fontWeight: "600" },
-    chipTextActive: { color: "#ffffff" },
-    toolbar: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 14, gap: 8 },
+    chipInactive: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.bgCard,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    chipActive: {
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderRadius: 999,
+      backgroundColor: colors.accentPrimary,
+      borderColor: colors.accentPrimary,
+    },
+    chipTextActive: { color: "#ffffff", fontWeight: "600" },
+    toolbar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingBottom: 18,
+      gap: 8,
+    },
     toggleGroup: { flexDirection: "row", gap: 6 },
     toggleButton: {
       paddingHorizontal: 10,
@@ -224,6 +238,18 @@ function createStyles(colors: ColorPalette) {
     toggleButtonActive: { backgroundColor: colors.accentPrimary, borderColor: colors.accentPrimary },
     toggleText: { color: colors.textSecondary, fontSize: 12, fontWeight: "600" },
     toggleTextActive: { color: "#ffffff" },
+    sortButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 8,
+      backgroundColor: colors.bgCard,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    sortButtonText: { color: colors.textSecondary, fontSize: 12, fontWeight: "600" },
     centered: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
     error: { color: colors.scoreLow },
     retryButton: {
