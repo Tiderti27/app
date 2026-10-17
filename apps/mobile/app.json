@@ -7,9 +7,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0f0f14",
-    "splash": {
-      "backgroundColor": "#0f0f14"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.spot.app",
