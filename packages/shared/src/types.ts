@@ -164,3 +164,61 @@ export interface CreatorPayout {
   stripe_transfer_id: string | null;
   created_at: string;
 }
+
+// Rueckgabe der RPC redeem_promo_code() (supabase/migrations/20260827000000_rabattcode_system.sql)
+export interface RedeemResult {
+  id: string;
+  promotion_id: string;
+  spot_id: string;
+  qr_token: string;
+  qr_expires_at: string;
+  fallback_code: string | null;
+  status: RedemptionStatus;
+  discount_type: DiscountType;
+  discount_value: number;
+  spot_name: string;
+}
+
+// Rueckgabe der RPC scan_redemption()
+export interface ScanResult {
+  id: string;
+  status: RedemptionStatus;
+  spot_name: string;
+  promotion_title: string;
+  discount_type: DiscountType;
+  discount_value: number;
+  redeemed_at: string;
+}
+
+// Rueckgabe der RPC business_redemptions_today()
+export interface BusinessRedemptionToday {
+  id: string;
+  spot_name: string;
+  creator_username: string | null;
+  discount_type: DiscountType;
+  discount_value: number;
+  redeemed_at: string;
+}
+
+// Rueckgabe der RPC business_stats()
+export interface BusinessStats {
+  profile_views: number;
+  saves_total: number;
+  active_promotions: number;
+  redemptions_period: number;
+  top_creator_username: string | null;
+  top_creator_redemptions: number | null;
+}
+
+// Rueckgabe der RPC business_creator_breakdown()
+export interface CreatorBreakdown {
+  creator_username: string;
+  redemption_count: number;
+}
+
+// Rueckgabe der RPC creator_stats()
+export interface CreatorStats {
+  total_redemptions: number;
+  total_earnings: number;
+  active_cooperations: number;
+}

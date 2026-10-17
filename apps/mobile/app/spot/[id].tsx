@@ -1,11 +1,13 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { ColorPalette, VideoPlatform } from "@spot/shared";
 import { useSpotDetail } from "@/hooks/use-spot-detail";
 import { useTheme } from "@/context/theme-context";
+import { supabase } from "@/lib/supabase";
 import { BackIcon, CategoryIcon, ClockIcon, HeartIcon, PlayIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
+import { PromotionSection } from "@/components/promotion-section";
 
 const RATING_PRESETS = [60, 75, 85, 95, 100];
 
@@ -21,6 +23,11 @@ export default function SpotDetailScreen() {
   const heroBg = mode === "light" ? "#ece7f5" : "#161320";
   const styles = useMemo(() => createStyles(colors, heroBg), [colors, heroBg]);
   const { spot, videos, myRating, saved, loading, submitRating, toggleSave } = useSpotDetail(id);
+
+  useEffect(() => {
+    if (!id) return;
+    supabase.rpc("log_spot_view", { p_spot_id: id }).then(() => {});
+  }, [id]);
 
   if (loading) {
     return (
@@ -114,6 +121,8 @@ export default function SpotDetailScreen() {
             </ScrollView>
           </View>
         )}
+
+        <PromotionSection spotId={spot.id} colors={colors} />
 
         {spot.opening_hours && (
           <View style={styles.hoursRow}>

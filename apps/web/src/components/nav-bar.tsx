@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/profile", label: "Profil" },
   { href: "/promotions", label: "Aktionen" },
   { href: "/scanner", label: "QR-Scanner" },
+  { href: "/statistics", label: "Statistiken" },
   { href: "/subscription", label: "Abo" },
 ];
 

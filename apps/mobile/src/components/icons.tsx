@@ -16,6 +16,20 @@ export function PinIcon({ size = 20, color }: IconProps) {
   );
 }
 
+export function GiftIcon({ size = 18, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x={3} y={8} width={18} height={13} rx={1.5} stroke={color} {...STROKE} />
+      <Path d="M3 12h18M12 8v13" stroke={color} {...STROKE} />
+      <Path
+        d="M12 8c-2-3-6-3-6-.5C6 9 9 8 12 8zM12 8c2-3 6-3 6-.5C18 9 15 8 12 8z"
+        stroke={color}
+        {...STROKE}
+      />
+    </Svg>
+  );
+}
+
 export function SortIcon({ size = 15, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
