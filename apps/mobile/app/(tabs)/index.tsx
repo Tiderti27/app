@@ -5,6 +5,8 @@ import { Link } from "expo-router";
 import { SPOT_CATEGORIES, scoreColor, type ColorPalette, type SpotCategory } from "@spot/shared";
 import { useNearbySpots } from "@/hooks/use-nearby-spots";
 import { useTheme } from "@/context/theme-context";
+import { CategoryIcon } from "@/components/icons";
+import { ScoreBadge } from "@/components/score-badge";
 
 type ViewMode = "map" | "list";
 type SortMode = "score" | "distance" | "newest";
@@ -47,6 +49,7 @@ export default function MapScreen() {
               onPress={() => setActiveCategory(active ? null : item.value)}
               style={[styles.chip, active && styles.chipActive]}
             >
+              <CategoryIcon category={item.value} size={14} color={active ? "#ffffff" : colors.textSecondary} />
               <Text style={[styles.chipText, active && styles.chipTextActive]}>{item.label}</Text>
             </Pressable>
           );
@@ -135,15 +138,20 @@ export default function MapScreen() {
           renderItem={({ item }) => (
             <Link href={`/spot/${item.id}`} asChild>
               <Pressable style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>{item.name}</Text>
-                  <Text style={[styles.cardScore, { color: scoreColor(item.score, colors) }]}>
-                    {item.score.toFixed(0)}
+                <View style={styles.cardIcon}>
+                  <CategoryIcon category={item.category} size={24} color={colors.textSecondary} />
+                </View>
+                <View style={styles.cardBody}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <ScoreBadge score={item.score} colors={colors} />
+                  </View>
+                  <Text style={styles.cardSubtitle} numberOfLines={1}>
+                    {item.address} · {(item.distance_meters / 1000).toFixed(1)} km
                   </Text>
                 </View>
-                <Text style={styles.cardSubtitle}>
-                  {item.address} · {(item.distance_meters / 1000).toFixed(1)} km
-                </Text>
               </Pressable>
             </Link>
           )}
@@ -158,6 +166,9 @@ function createStyles(colors: ColorPalette) {
     container: { flex: 1, backgroundColor: colors.bgPrimary },
     filterRow: { padding: 12, gap: 8 },
     chip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
       paddingHorizontal: 14,
       paddingVertical: 8,
       borderRadius: 999,
@@ -196,16 +207,27 @@ function createStyles(colors: ColorPalette) {
     list: { padding: 12, gap: 10 },
     emptyText: { color: colors.textSecondary, textAlign: "center", marginTop: 24 },
     card: {
+      flexDirection: "row",
+      gap: 12,
       backgroundColor: colors.bgCard,
-      borderRadius: 12,
-      padding: 16,
+      borderRadius: 18,
+      padding: 14,
       marginBottom: 10,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    cardTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "700" },
-    cardScore: { fontSize: 20, fontWeight: "800" },
-    cardSubtitle: { color: colors.textSecondary, marginTop: 4 },
+    cardIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: 14,
+      backgroundColor: colors.bgSecondary,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    cardBody: { flex: 1, minWidth: 0, gap: 4, justifyContent: "center" },
+    cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8 },
+    cardTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: "700", flexShrink: 1 },
+    cardSubtitle: { color: colors.textSecondary, fontSize: 12.5 },
   });
 }

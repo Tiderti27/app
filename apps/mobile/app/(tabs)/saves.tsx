@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Link } from "expo-router";
-import { scoreColor, type ColorPalette } from "@spot/shared";
+import type { ColorPalette } from "@spot/shared";
 import { useSaves } from "@/hooks/use-saves";
 import { useTheme } from "@/context/theme-context";
+import { CategoryIcon } from "@/components/icons";
+import { ScoreBadge } from "@/components/score-badge";
 
 export default function SavesScreen() {
   const { colors } = useTheme();
@@ -28,13 +30,20 @@ export default function SavesScreen() {
       renderItem={({ item }) => (
         <Link href={`/spot/${item.id}`} asChild>
           <Pressable style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              <Text style={[styles.cardScore, { color: scoreColor(item.score, colors) }]}>
-                {item.score.toFixed(0)}
+            <View style={styles.cardIcon}>
+              <CategoryIcon category={item.category} size={24} color={colors.textSecondary} />
+            </View>
+            <View style={styles.cardBody}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle} numberOfLines={1}>
+                  {item.name}
+                </Text>
+                <ScoreBadge score={item.score} colors={colors} />
+              </View>
+              <Text style={styles.cardSubtitle} numberOfLines={1}>
+                {item.address}
               </Text>
             </View>
-            <Text style={styles.cardSubtitle}>{item.address}</Text>
           </Pressable>
         </Link>
       )}
@@ -49,16 +58,27 @@ function createStyles(colors: ColorPalette) {
     list: { padding: 12, gap: 10, flexGrow: 1 },
     emptyText: { color: colors.textSecondary, textAlign: "center", marginTop: 24 },
     card: {
+      flexDirection: "row",
+      gap: 12,
       backgroundColor: colors.bgCard,
-      borderRadius: 12,
-      padding: 16,
+      borderRadius: 18,
+      padding: 14,
       marginBottom: 10,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    cardTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "700" },
-    cardScore: { fontSize: 20, fontWeight: "800" },
-    cardSubtitle: { color: colors.textSecondary, marginTop: 4 },
+    cardIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: 14,
+      backgroundColor: colors.bgSecondary,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    cardBody: { flex: 1, minWidth: 0, gap: 4, justifyContent: "center" },
+    cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8 },
+    cardTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: "700", flexShrink: 1 },
+    cardSubtitle: { color: colors.textSecondary, fontSize: 12.5 },
   });
 }
