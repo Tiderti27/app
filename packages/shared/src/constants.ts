@@ -16,12 +16,18 @@ export interface ColorPalette {
   bgPrimary: string;
   bgSecondary: string;
   bgCard: string;
+  bgElevated: string;
   accentPrimary: string;
   accentSecondary: string;
   scoreColor: string;
   scoreHigh: string;
   scoreMid: string;
   scoreLow: string;
+  // Getoente Hintergruende fuer Score-Badges (wie im Design-Entwurf: feste
+  // Farbpaare statt berechneter Transparenz).
+  scoreHighTint: string;
+  scoreMidTint: string;
+  scoreLowTint: string;
   textPrimary: string;
   textSecondary: string;
   border: string;
@@ -32,33 +38,42 @@ export const DARK_COLORS: ColorPalette = {
   bgPrimary: "#0b0b10",
   bgSecondary: "#16161f",
   bgCard: "#16161f",
+  bgElevated: "#1e1e2a",
   accentPrimary: "#8b5cf6",
   accentSecondary: "#a78bfa",
   scoreColor: "#fbbf24",
   scoreHigh: "#4ade80",
   scoreMid: "#fbbf24",
   scoreLow: "#fb7185",
+  scoreHighTint: "#1d2a20",
+  scoreMidTint: "#2a2316",
+  scoreLowTint: "#2a1a1c",
   textPrimary: "#f5f4f7",
   textSecondary: "#9c99ab",
   border: "#27262f",
 };
 
-// Helle Variante: gleiche Markenfarben, fuer ausreichenden Kontrast auf
-// weissem Grund nachjustiert (reines Dark-Gold/-Gruen waere auf Weiss zu
-// kontrastarm).
+// Helle Variante: gleiche Markenfarben, aber bewusst kein reines Weiss -
+// ein heller Grauton als Seitenhintergrund, Karten etwas heller darueber,
+// fuer ausreichenden Kontrast auf dem Grund nachjustiert (reines Dark-
+// Gold/-Gruen waere auf Hellgrau zu kontrastarm).
 export const LIGHT_COLORS: ColorPalette = {
-  bgPrimary: "#ffffff",
-  bgSecondary: "#f5f4f8",
-  bgCard: "#f9f8fb",
+  bgPrimary: "#eceaf0",
+  bgSecondary: "#e1dfe6",
+  bgCard: "#f5f4f7",
+  bgElevated: "#ffffff",
   accentPrimary: "#7c3aed",
   accentSecondary: "#8b5cf6",
   scoreColor: "#d97706",
   scoreHigh: "#16a34a",
   scoreMid: "#d97706",
   scoreLow: "#dc2626",
+  scoreHighTint: "#dcfce7",
+  scoreMidTint: "#fef3c7",
+  scoreLowTint: "#fee2e2",
   textPrimary: "#18181b",
   textSecondary: "#6b6878",
-  border: "#e4e2ea",
+  border: "#d6d3dd",
 };
 
 export const THEMES: Record<ThemeMode, ColorPalette> = {
@@ -73,6 +88,12 @@ export function scoreColor(score: number, colors: ColorPalette = DARK_COLORS): s
   if (score >= 80) return colors.scoreHigh;
   if (score >= 50) return colors.scoreMid;
   return colors.scoreLow;
+}
+
+export function scoreTint(score: number, colors: ColorPalette = DARK_COLORS): string {
+  if (score >= 80) return colors.scoreHighTint;
+  if (score >= 50) return colors.scoreMidTint;
+  return colors.scoreLowTint;
 }
 
 // docs/spec.md Abschnitt 8 - Laden-Abos

@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import type { ColorPalette } from "@spot/shared";
 import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/theme-context";
-import { MailIcon, LockIcon, PinIcon } from "@/components/icons";
+import { ArrowRightIcon, MailIcon, LockIcon, PinIcon } from "@/components/icons";
 
 export default function RegisterScreen() {
   const { signUp } = useAuth();
@@ -43,75 +43,90 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.brandRow}>
-        <PinIcon size={20} color={colors.accentPrimary} />
-        <Text style={styles.brand}>Spot</Text>
+      <View style={styles.decorativePin}>
+        <PinIcon size={340} color={colors.textPrimary} />
       </View>
 
-      <View style={styles.headingGroup}>
-        <Text style={styles.title}>Konto{"\n"}erstellen</Text>
-        <Text style={styles.subtitle}>Leg dir ein Konto an, um Orte zu bewerten und zu speichern.</Text>
-      </View>
+      <View style={styles.inner}>
+        <View style={styles.brandRow}>
+          <PinIcon size={22} color={colors.accentPrimary} />
+          <Text style={styles.brand}>Spot</Text>
+        </View>
 
-      <View style={styles.form}>
-        <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>Nutzername</Text>
-          <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.input}
-              placeholder="dein_name"
-              placeholderTextColor={colors.textSecondary}
-              autoCapitalize="none"
-              value={username}
-              onChangeText={setUsername}
-            />
+        <View style={styles.centerGroup}>
+          <View style={styles.headingGroup}>
+            <Text style={styles.title}>Konto{"\n"}erstellen</Text>
+            <Text style={styles.subtitle}>Leg dir ein Konto an, um Orte zu bewerten und zu speichern.</Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.fieldLabel}>Nutzername</Text>
+              <View style={styles.inputGroup}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="dein_name"
+                  placeholderTextColor={colors.textSecondary}
+                  autoCapitalize="none"
+                  value={username}
+                  onChangeText={setUsername}
+                />
+              </View>
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.fieldLabel}>E-Mail</Text>
+              <View style={styles.inputGroup}>
+                <MailIcon size={18} color={colors.textSecondary} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="deine@email.de"
+                  placeholderTextColor={colors.textSecondary}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+              </View>
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.fieldLabel}>Passwort</Text>
+              <View style={styles.inputGroup}>
+                <LockIcon size={18} color={colors.textSecondary} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  placeholderTextColor={colors.textSecondary}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+              </View>
+            </View>
+
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {info ? <Text style={styles.info}>{info}</Text> : null}
+
+            <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
+              {submitting ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>Registrieren</Text>
+                  <ArrowRightIcon size={17} color="#ffffff" />
+                </>
+              )}
+            </Pressable>
           </View>
         </View>
 
-        <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>E-Mail</Text>
-          <View style={styles.inputGroup}>
-            <MailIcon size={18} color={colors.textSecondary} />
-            <TextInput
-              style={styles.input}
-              placeholder="deine@email.de"
-              placeholderTextColor={colors.textSecondary}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-          </View>
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Schon ein Konto?</Text>
+          <Link href="/(auth)/login" style={styles.link}>
+            Anmelden
+          </Link>
         </View>
-
-        <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>Passwort</Text>
-          <View style={styles.inputGroup}>
-            <LockIcon size={18} color={colors.textSecondary} />
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor={colors.textSecondary}
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-          </View>
-        </View>
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {info ? <Text style={styles.info}>{info}</Text> : null}
-
-        <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
-          {submitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Registrieren</Text>}
-        </Pressable>
-      </View>
-
-      <View style={styles.footerRow}>
-        <Text style={styles.footerText}>Schon ein Konto?</Text>
-        <Link href="/(auth)/login" style={styles.link}>
-          Anmelden
-        </Link>
       </View>
     </View>
   );
@@ -119,11 +134,20 @@ export default function RegisterScreen() {
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.bgPrimary, padding: 24, justifyContent: "center", gap: 28 },
-    brandRow: { flexDirection: "row", alignItems: "center", gap: 7, position: "absolute", top: 60, left: 24 },
-    brand: { fontSize: 17, fontWeight: "800", color: colors.textPrimary },
+    container: { flex: 1, backgroundColor: colors.bgPrimary, position: "relative", overflow: "hidden" },
+    decorativePin: {
+      position: "absolute",
+      right: -90,
+      bottom: -60,
+      opacity: 0.04,
+      transform: [{ rotate: "-12deg" }],
+    },
+    inner: { flex: 1, padding: 28, paddingBottom: 40, justifyContent: "space-between" },
+    brandRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 },
+    brand: { fontSize: 20, fontWeight: "800", color: colors.textPrimary, letterSpacing: -0.2 },
+    centerGroup: { gap: 24, marginTop: -20 },
     headingGroup: { gap: 8 },
-    title: { color: colors.textPrimary, fontSize: 28, fontWeight: "800", lineHeight: 33 },
+    title: { color: colors.textPrimary, fontSize: 30, fontWeight: "800", lineHeight: 35, letterSpacing: -0.2 },
     subtitle: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
     form: { gap: 14 },
     fieldGroup: { gap: 6 },
@@ -141,10 +165,11 @@ function createStyles(colors: ColorPalette) {
     },
     input: { flex: 1, color: colors.textPrimary, fontSize: 15 },
     button: {
-      marginTop: 4,
+      marginTop: 6,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
+      gap: 8,
       backgroundColor: colors.accentPrimary,
       borderRadius: 14,
       padding: 16,

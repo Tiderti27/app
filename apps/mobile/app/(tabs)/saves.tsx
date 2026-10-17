@@ -55,7 +55,7 @@ function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bgPrimary },
     centered: { flex: 1, backgroundColor: colors.bgPrimary, alignItems: "center", justifyContent: "center" },
-    list: { padding: 12, gap: 10, flexGrow: 1 },
+    list: { padding: 20, gap: 12, flexGrow: 1 },
     emptyText: { color: colors.textSecondary, textAlign: "center", marginTop: 24 },
     card: {
       flexDirection: "row",
@@ -63,15 +63,14 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.bgCard,
       borderRadius: 18,
       padding: 14,
-      marginBottom: 10,
-      borderWidth: 1,
+      borderWidth: 1.5,
       borderColor: colors.border,
     },
     cardIcon: {
-      width: 56,
-      height: 56,
+      width: 64,
+      height: 64,
       borderRadius: 14,
-      backgroundColor: colors.bgSecondary,
+      backgroundColor: colors.bgElevated,
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,

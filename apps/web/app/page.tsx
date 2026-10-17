@@ -55,6 +55,25 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* TODO: echte Aktionen/Creator ueber supabase.from("promotions"/"redemptions")
+            laden, sobald das Rabattcode-System gebaut ist (docs/spec.md Abschnitt 5/7.2). */}
+        <div className="panel-row">
+          <div className="card panel panel-wide">
+            <div className="panel-header">
+              <span className="panel-title">Aktive Aktionen</span>
+              <button className="panel-action" type="button">
+                Neue Aktion +
+              </button>
+            </div>
+            <p style={{ margin: 0, color: "var(--text-tertiary)", fontSize: 13.5 }}>Noch keine Aktion erstellt.</p>
+          </div>
+
+          <div className="card panel panel-narrow">
+            <span className="panel-title">Top Creator</span>
+            <p style={{ margin: 0, color: "var(--text-tertiary)", fontSize: 13.5 }}>Noch keine Einlösungen.</p>
+          </div>
+        </div>
       </main>
     </AuthGate>
   );

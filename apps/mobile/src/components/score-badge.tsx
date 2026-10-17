@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { scoreColor, type ColorPalette } from "@spot/shared";
+import { scoreColor, scoreTint, type ColorPalette } from "@spot/shared";
 
 interface ScoreBadgeProps {
   score: number;
@@ -9,6 +9,7 @@ interface ScoreBadgeProps {
 
 export function ScoreBadge({ score, colors, size = "small" }: ScoreBadgeProps) {
   const color = scoreColor(score, colors);
+  const tint = scoreTint(score, colors);
   const large = size === "large";
 
   return (
@@ -16,7 +17,8 @@ export function ScoreBadge({ score, colors, size = "small" }: ScoreBadgeProps) {
       style={[
         styles.badge,
         large ? styles.badgeLarge : styles.badgeSmall,
-        { backgroundColor: color + "22" },
+        { backgroundColor: tint },
+        large && { borderColor: colors.bgPrimary },
       ]}
     >
       <Text style={[styles.text, large ? styles.textLarge : styles.textSmall, { color }]}>
@@ -30,7 +32,7 @@ export function ScoreBadge({ score, colors, size = "small" }: ScoreBadgeProps) {
 const styles = StyleSheet.create({
   badge: { alignItems: "center", justifyContent: "center" },
   badgeSmall: { borderRadius: 9, paddingHorizontal: 8, paddingVertical: 3 },
-  badgeLarge: { width: 68, height: 68, borderRadius: 18 },
+  badgeLarge: { width: 68, height: 68, borderRadius: 18, borderWidth: 4 },
   text: { fontWeight: "800" },
   textSmall: { fontSize: 13 },
   textLarge: { fontSize: 24, lineHeight: 26 },

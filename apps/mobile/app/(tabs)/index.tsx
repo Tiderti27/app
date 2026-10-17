@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { SPOT_CATEGORIES, scoreColor, type ColorPalette, type SpotCategory } from "@spot/shared";
 import { useNearbySpots } from "@/hooks/use-nearby-spots";
 import { useTheme } from "@/context/theme-context";
-import { CategoryIcon } from "@/components/icons";
+import { CategoryIcon, PinIcon, UserIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
 
 type ViewMode = "map" | "list";
@@ -20,6 +20,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 export default function MapScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<SpotCategory | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("map");
   const [sortMode, setSortMode] = useState<SortMode>("distance");
@@ -36,6 +37,16 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.brandRow}>
+          <PinIcon size={19} color={colors.accentPrimary} />
+          <Text style={styles.brand}>Spot</Text>
+        </View>
+        <Pressable style={styles.avatar} onPress={() => router.push("/(tabs)/profile")}>
+          <UserIcon size={16} color={colors.textSecondary} />
+        </Pressable>
+      </View>
+
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -164,7 +175,27 @@ export default function MapScreen() {
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bgPrimary },
-    filterRow: { padding: 12, gap: 8 },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 14,
+    },
+    brandRow: { flexDirection: "row", alignItems: "center", gap: 7 },
+    brand: { fontSize: 17, fontWeight: "800", color: colors.textPrimary },
+    avatar: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: colors.bgElevated,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    filterRow: { paddingHorizontal: 20, paddingBottom: 14, gap: 8 },
     chip: {
       flexDirection: "row",
       alignItems: "center",
@@ -180,7 +211,7 @@ function createStyles(colors: ColorPalette) {
     chipActive: { backgroundColor: colors.accentPrimary, borderColor: colors.accentPrimary },
     chipText: { color: colors.textSecondary, fontWeight: "600" },
     chipTextActive: { color: "#ffffff" },
-    toolbar: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
+    toolbar: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 14, gap: 8 },
     toggleGroup: { flexDirection: "row", gap: 6 },
     toggleButton: {
       paddingHorizontal: 10,
@@ -204,7 +235,7 @@ function createStyles(colors: ColorPalette) {
     },
     retryText: { color: colors.textPrimary },
     map: { flex: 1 },
-    list: { padding: 12, gap: 10 },
+    list: { paddingHorizontal: 20, paddingBottom: 20, gap: 12 },
     emptyText: { color: colors.textSecondary, textAlign: "center", marginTop: 24 },
     card: {
       flexDirection: "row",
@@ -212,15 +243,14 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.bgCard,
       borderRadius: 18,
       padding: 14,
-      marginBottom: 10,
-      borderWidth: 1,
+      borderWidth: 1.5,
       borderColor: colors.border,
     },
     cardIcon: {
-      width: 56,
-      height: 56,
+      width: 64,
+      height: 64,
       borderRadius: 14,
-      backgroundColor: colors.bgSecondary,
+      backgroundColor: colors.bgElevated,
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,

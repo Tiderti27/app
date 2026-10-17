@@ -51,6 +51,14 @@ export function BackIcon({ size = 20, color }: IconProps) {
   );
 }
 
+export function ArrowRightIcon({ size = 17, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M5 12h14M13 6l6 6-6 6" stroke={color} {...STROKE} />
+    </Svg>
+  );
+}
+
 export function ClockIcon({ size = 15, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

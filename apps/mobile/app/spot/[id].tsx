@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { ColorPalette, VideoPlatform } from "@spot/shared";
@@ -17,10 +17,10 @@ const PLATFORM_LABEL: Record<VideoPlatform, string> = {
 
 export default function SpotDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, mode } = useTheme();
+  const heroBg = mode === "light" ? "#ece7f5" : "#161320";
+  const styles = useMemo(() => createStyles(colors, heroBg), [colors, heroBg]);
   const { spot, videos, myRating, saved, loading, submitRating, toggleSave } = useSpotDetail(id);
-  const [ratingOpen, setRatingOpen] = useState(false);
 
   if (loading) {
     return (
@@ -68,27 +68,28 @@ export default function SpotDetailScreen() {
         {spot.description ? <Text style={styles.description}>{spot.description}</Text> : null}
 
         <View style={styles.ratingSection}>
-          {myRating !== null && <Text style={styles.myRating}>Deine Bewertung: {myRating}</Text>}
-
-          {!ratingOpen ? (
-            <Pressable style={styles.primaryButton} onPress={() => setRatingOpen(true)}>
+          {myRating === null ? (
+            <Pressable style={styles.primaryButton} onPress={() => submitRating(90)}>
               <Text style={styles.primaryButtonText}>War gut hier</Text>
             </Pressable>
           ) : (
-            <View style={styles.presetRow}>
-              {RATING_PRESETS.map((preset) => (
-                <Pressable
-                  key={preset}
-                  style={[styles.presetButton, myRating === preset && styles.presetButtonActive]}
-                  onPress={() => {
-                    submitRating(preset);
-                    setRatingOpen(false);
-                  }}
-                >
-                  <Text style={[styles.presetText, myRating === preset && styles.presetTextActive]}>{preset}</Text>
-                </Pressable>
-              ))}
-            </View>
+            <>
+              <View style={styles.ratingHeader}>
+                <Text style={styles.ratingHeaderLabel}>Deine Bewertung</Text>
+                <Text style={styles.myRating}>{myRating} gespeichert</Text>
+              </View>
+              <View style={styles.presetRow}>
+                {RATING_PRESETS.map((preset) => (
+                  <Pressable
+                    key={preset}
+                    style={[styles.presetButton, myRating === preset && styles.presetButtonActive]}
+                    onPress={() => submitRating(preset)}
+                  >
+                    <Text style={[styles.presetText, myRating === preset && styles.presetTextActive]}>{preset}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
           )}
         </View>
 
@@ -125,14 +126,14 @@ export default function SpotDetailScreen() {
   );
 }
 
-function createStyles(colors: ColorPalette) {
+function createStyles(colors: ColorPalette, heroBg: string) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bgPrimary },
     content: { paddingBottom: 24 },
     centered: { flex: 1, backgroundColor: colors.bgPrimary, alignItems: "center", justifyContent: "center" },
     hero: {
       height: 190,
-      backgroundColor: colors.bgCard,
+      backgroundColor: heroBg,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -167,7 +168,9 @@ function createStyles(colors: ColorPalette) {
     text: { color: colors.textSecondary, fontSize: 13 },
     description: { color: colors.textPrimary, marginTop: 4, lineHeight: 20, fontSize: 13.5 },
     ratingSection: { marginTop: 18, gap: 10 },
-    myRating: { color: colors.scoreHigh, fontWeight: "600" },
+    ratingHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    ratingHeaderLabel: { color: colors.textPrimary, fontSize: 14, fontWeight: "700" },
+    myRating: { color: colors.scoreHigh, fontWeight: "700", fontSize: 12 },
     primaryButton: {
       backgroundColor: colors.accentPrimary,
       borderRadius: 12,
