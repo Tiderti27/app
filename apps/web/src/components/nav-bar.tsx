@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
-import { supabase } from "@/lib/supabase";
+import { useUserProfile } from "@/context/user-profile-context";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard" },
@@ -17,23 +16,11 @@ const NAV_ITEMS = [
 
 export function NavBar() {
   const { session, signOut } = useAuth();
+  const { username, isAdmin } = useUserProfile();
   const pathname = usePathname();
-  const [displayName, setDisplayName] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!session) {
-      setDisplayName(null);
-      return;
-    }
-    supabase
-      .from("users")
-      .select("username")
-      .eq("id", session.user.id)
-      .single()
-      .then(({ data }) => setDisplayName(data?.username ?? null));
-  }, [session]);
-
-  const label = displayName ?? session?.user.email ?? "";
+  const navItems = isAdmin ? [...NAV_ITEMS, { href: "/admin", label: "Admin" }] : NAV_ITEMS;
+  const label = username ?? session?.user.email ?? "";
 
   return (
     <nav className="nav">
@@ -46,7 +33,7 @@ export function NavBar() {
       </div>
 
       <div className="nav-links">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <Link key={item.href} href={item.href} className={pathname === item.href ? "active" : undefined}>
             {item.label}
           </Link>

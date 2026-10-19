@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import type { ColorPalette, UserRole } from "@spot/shared";
 import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/theme-context";
 import { supabase } from "@/lib/supabase";
 import { ActivitySection } from "@/components/activity-section";
 import { CreatorPanel } from "@/components/creator-panel";
+import { CreatorApplicationSection } from "@/components/creator-application-section";
 
 export default function ProfileScreen() {
   const { session, signOut } = useAuth();
@@ -13,7 +14,6 @@ export default function ProfileScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [username, setUsername] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
-  const [becomingCreator, setBecomingCreator] = useState(false);
 
   const loadUser = useCallback(() => {
     if (!session) return;
@@ -31,14 +31,6 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadUser();
   }, [loadUser]);
-
-  async function becomeCreator() {
-    if (!session) return;
-    setBecomingCreator(true);
-    await supabase.from("users").update({ role: "creator" }).eq("id", session.user.id);
-    setBecomingCreator(false);
-    loadUser();
-  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -67,21 +59,7 @@ export default function ProfileScreen() {
 
       {role === "creator" && <CreatorPanel colors={colors} />}
 
-      {role === "consumer" && (
-        <View style={styles.creatorPromo}>
-          <Text style={styles.creatorPromoTitle}>Du erstellst Content über Orte?</Text>
-          <Text style={styles.creatorPromoText}>
-            Werde Creator, verknüpfe deine Videos mit Spots und verdiene an Rabattcode-Einlösungen.
-          </Text>
-          <Pressable style={styles.creatorPromoButton} onPress={becomeCreator} disabled={becomingCreator}>
-            {becomingCreator ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={styles.creatorPromoButtonText}>Werde Creator</Text>
-            )}
-          </Pressable>
-        </View>
-      )}
+      {role === "consumer" && <CreatorApplicationSection colors={colors} />}
 
       <Pressable style={styles.button} onPress={signOut}>
         <Text style={styles.buttonText}>Abmelden</Text>
@@ -127,23 +105,6 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 14,
     },
     rowLabel: { color: colors.textPrimary, fontSize: 14, fontWeight: "600" },
-    creatorPromo: {
-      backgroundColor: colors.bgCard,
-      borderWidth: 1.5,
-      borderColor: colors.accentPrimary,
-      borderRadius: 16,
-      padding: 16,
-      gap: 10,
-    },
-    creatorPromoTitle: { color: colors.textPrimary, fontSize: 14.5, fontWeight: "700" },
-    creatorPromoText: { color: colors.textSecondary, fontSize: 12.5, lineHeight: 18 },
-    creatorPromoButton: {
-      backgroundColor: colors.accentPrimary,
-      borderRadius: 10,
-      paddingVertical: 11,
-      alignItems: "center",
-    },
-    creatorPromoButtonText: { color: "#ffffff", fontWeight: "700", fontSize: 13.5 },
     button: {
       alignSelf: "center",
       backgroundColor: colors.bgCard,

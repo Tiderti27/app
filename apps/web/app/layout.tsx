@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/context/auth-context";
+import { UserProfileProvider } from "@/context/user-profile-context";
 import { NavBar } from "@/components/nav-bar";
 import "./globals.css";
 
@@ -18,8 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap"
         />
         <AuthProvider>
-          <NavBar />
-          {children}
+          <UserProfileProvider>
+            <NavBar />
+            {children}
+          </UserProfileProvider>
         </AuthProvider>
       </body>
     </html>

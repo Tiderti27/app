@@ -9,6 +9,7 @@ export interface User {
   display_name: string | null;
   avatar_url: string | null;
   role: UserRole;
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -208,6 +209,32 @@ export interface BusinessStats {
   redemptions_period: number;
   top_creator_username: string | null;
   top_creator_redemptions: number | null;
+}
+
+export type CreatorApplicationStatus = "pending" | "approved" | "rejected";
+
+export interface CreatorApplication {
+  id: string;
+  user_id: string;
+  tiktok_handle: string | null;
+  instagram_handle: string | null;
+  youtube_handle: string | null;
+  message: string | null;
+  status: CreatorApplicationStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+// Rueckgabe der RPC admin_business_overview()
+export interface AdminBusinessOverview {
+  business_id: string;
+  username: string;
+  spot_id: string | null;
+  spot_name: string | null;
+  active_promotions: number;
+  redemptions_total: number;
+  saves_total: number;
 }
 
 // Rueckgabe der RPC business_creator_breakdown()
