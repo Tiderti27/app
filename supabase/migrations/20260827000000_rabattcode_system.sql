@@ -105,7 +105,7 @@ begin
     raise exception 'Code ungueltig';
   end if;
 
-  select * into v_promo from promotions where id = v_code.promotion_id;
+  select * into v_promo from promotions where promotions.id = v_code.promotion_id;
   if v_promo.id is null or not v_promo.is_active then
     raise exception 'Aktion nicht mehr aktiv';
   end if;
@@ -142,7 +142,7 @@ begin
   if v_existing.id is not null then
     update redemptions
       set qr_token = v_token, qr_expires_at = v_expires, fallback_code = v_fallback, status = 'generated'
-      where id = v_existing.id
+      where redemptions.id = v_existing.id
       returning * into v_existing;
   else
     insert into redemptions (
@@ -187,10 +187,10 @@ begin
   end if;
 
   if p_qr_token is not null then
-    select * into v_redemption from redemptions where qr_token = p_qr_token;
+    select * into v_redemption from redemptions where redemptions.qr_token = p_qr_token;
   elsif p_fallback_code is not null then
     select * into v_redemption from redemptions
-      where fallback_code = p_fallback_code and status = 'generated'
+      where redemptions.fallback_code = p_fallback_code and redemptions.status = 'generated'
       order by created_at desc
       limit 1;
   else
@@ -201,8 +201,8 @@ begin
     raise exception 'Code nicht gefunden';
   end if;
 
-  select * into v_spot from spots where id = v_redemption.spot_id;
-  select * into v_promo from promotions where id = v_redemption.promotion_id;
+  select * into v_spot from spots where spots.id = v_redemption.spot_id;
+  select * into v_promo from promotions where promotions.id = v_redemption.promotion_id;
 
   if v_spot.claimed_by is distinct from auth.uid() and v_promo.business_id is distinct from auth.uid() then
     raise exception 'Keine Berechtigung fuer diesen Laden';
@@ -213,16 +213,16 @@ begin
   end if;
 
   if v_redemption.status = 'generated' and v_redemption.qr_expires_at < now() then
-    update redemptions set status = 'expired' where id = v_redemption.id;
+    update redemptions set status = 'expired' where redemptions.id = v_redemption.id;
     raise exception 'Code abgelaufen';
   end if;
 
   update redemptions
     set status = 'redeemed', redeemed_at = now(), redeemed_by_staff = auth.uid()::text
-    where id = v_redemption.id
+    where redemptions.id = v_redemption.id
     returning * into v_redemption;
 
-  update promotions set current_redemptions = current_redemptions + 1 where id = v_redemption.promotion_id;
+  update promotions set current_redemptions = current_redemptions + 1 where promotions.id = v_redemption.promotion_id;
 
   return query
     select v_redemption.id, v_redemption.status, v_spot.name, v_promo.title,
