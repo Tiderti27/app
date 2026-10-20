@@ -71,7 +71,10 @@ export function PhotoManager({
     if (!spotId) return;
     setUploading(true);
     setError(null);
-    setStatus(`Zuschneiden übernommen (${blob.size} Bytes), lade hoch...`);
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const authedUserId = sessionData.session?.user.id ?? "KEINE SESSION";
+    setStatus(`Zuschneiden übernommen (${blob.size} Bytes). Angemeldet als: ${authedUserId}. Lade hoch...`);
 
     try {
       const path = `${spotId}/${generateId()}.jpg`;
