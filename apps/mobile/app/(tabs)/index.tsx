@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import { Link, useRouter } from "expo-router";
-import { SPOT_CATEGORIES, scoreColor, type ColorPalette, type SpotCategory } from "@spot/shared";
+import { SPOT_CATEGORIES, scoreColor, type ColorPalette, type SpotCategory, type SpotWithDistance } from "@spot/shared";
 import { useNearbySpots } from "@/hooks/use-nearby-spots";
+import { useSaves } from "@/hooks/use-saves";
 import { useTheme } from "@/context/theme-context";
 import { CategoryIcon, PinIcon, SortIcon, UserIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
+import { SpotCarousel } from "@/components/spot-carousel";
 
 type ViewMode = "map" | "list";
 type SortMode = "score" | "distance" | "newest";
@@ -31,6 +33,7 @@ export default function MapScreen() {
   const [sortMode, setSortMode] = useState<SortMode>("distance");
 
   const { spots, location, loading, error, refresh } = useNearbySpots(activeCategory);
+  const { spots: savedSpots } = useSaves();
 
   const sortedSpots = useMemo(() => {
     const copy = [...spots];
@@ -40,8 +43,38 @@ export default function MapScreen() {
     return copy;
   }, [spots, sortMode]);
 
+  const popularSpots = useMemo(() => [...spots].sort((a, b) => b.score - a.score).slice(0, 10), [spots]);
+  const nearbySpots = useMemo(
+    () => [...spots].sort((a, b) => a.distance_meters - b.distance_meters).slice(0, 10),
+    [spots]
+  );
+
+  const forYouSpots = useMemo(() => {
+    if (savedSpots.length > 0) {
+      const categoryCounts = new Map<string, number>();
+      for (const saved of savedSpots) {
+        categoryCounts.set(saved.category, (categoryCounts.get(saved.category) ?? 0) + 1);
+      }
+      const topCategory = [...categoryCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+      if (topCategory) {
+        const savedIds = new Set(savedSpots.map((saved) => saved.id));
+        const matches = spots
+          .filter((spot) => spot.category === topCategory && !savedIds.has(spot.id))
+          .sort((a, b) => b.score - a.score);
+        if (matches.length > 0) return matches.slice(0, 10);
+      }
+    }
+
+    const bestPerCategory = new Map<string, SpotWithDistance>();
+    for (const spot of spots) {
+      const current = bestPerCategory.get(spot.category);
+      if (!current || spot.score > current.score) bestPerCategory.set(spot.category, spot);
+    }
+    return [...bestPerCategory.values()].sort((a, b) => b.score - a.score);
+  }, [spots, savedSpots]);
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.brandRow}>
           <PinIcon size={19} color={colors.accentPrimary} />
@@ -54,7 +87,7 @@ export default function MapScreen() {
 
       <FlatList
         horizontal
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={true}
         data={SPOT_CATEGORIES}
         keyExtractor={(item) => item.value}
         contentContainerStyle={styles.filterRow}
@@ -63,10 +96,10 @@ export default function MapScreen() {
           return (
             <Pressable
               onPress={() => setActiveCategory(active ? null : item.value)}
-              style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
+              style={[styles.chip, active && styles.chipActive]}
             >
               <CategoryIcon category={item.value} size={14} color={active ? "#ffffff" : colors.textSecondary} />
-              {active && <Text style={styles.chipTextActive}>{item.label}</Text>}
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>{item.label}</Text>
             </Pressable>
           );
         }}
@@ -132,20 +165,17 @@ export default function MapScreen() {
               title={spot.name}
               description={`Score ${spot.score.toFixed(0)}`}
               pinColor={scoreColor(spot.score, colors)}
-              onCalloutPress={() => {}}
+              onCalloutPress={() => router.push(`/spot/${spot.id}`)}
             />
           ))}
         </MapView>
       )}
 
       {!loading && !error && viewMode === "list" && (
-        <FlatList
-          data={sortedSpots}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.emptyText}>Keine Spots in deiner Naehe gefunden.</Text>}
-          renderItem={({ item }) => (
-            <Link href={`/spot/${item.id}`} asChild>
+        <View style={styles.list}>
+          {sortedSpots.length === 0 && <Text style={styles.emptyText}>Keine Spots in deiner Naehe gefunden.</Text>}
+          {sortedSpots.map((item) => (
+            <Link key={item.id} href={`/spot/${item.id}`} asChild>
               <Pressable style={styles.card}>
                 <View style={styles.cardIcon}>
                   <CategoryIcon category={item.category} size={24} color={colors.textSecondary} />
@@ -163,23 +193,33 @@ export default function MapScreen() {
                 </View>
               </Pressable>
             </Link>
-          )}
-        />
+          ))}
+        </View>
       )}
-    </View>
+
+      {!loading && !error && popularSpots.length > 0 && (
+        <SpotCarousel title="🔥 Aktuell beliebt" spots={popularSpots} colors={colors} />
+      )}
+      {!loading && !error && forYouSpots.length > 0 && (
+        <SpotCarousel title="✨ Für dich" spots={forYouSpots} colors={colors} />
+      )}
+      {!loading && !error && nearbySpots.length > 0 && (
+        <SpotCarousel title="📍 In deiner Nähe" spots={nearbySpots} colors={colors} />
+      )}
+    </ScrollView>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bgPrimary },
+    content: { paddingBottom: 32, gap: 24 },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: 20,
       paddingTop: 20,
-      paddingBottom: 18,
     },
     brandRow: { flexDirection: "row", alignItems: "center", gap: 7 },
     brand: { fontSize: 17, fontWeight: "800", color: colors.textPrimary },
@@ -193,37 +233,27 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
       justifyContent: "center",
     },
-    filterRow: { paddingHorizontal: 20, paddingBottom: 18, gap: 8 },
+    filterRow: { paddingHorizontal: 20, gap: 8 },
     chip: {
       flexDirection: "row",
       alignItems: "center",
       gap: 6,
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderRadius: 999,
+      backgroundColor: colors.bgCard,
       marginRight: 8,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    chipInactive: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: colors.bgCard,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    chipActive: {
-      paddingHorizontal: 14,
-      paddingVertical: 9,
-      borderRadius: 999,
-      backgroundColor: colors.accentPrimary,
-      borderColor: colors.accentPrimary,
-    },
-    chipTextActive: { color: "#ffffff", fontWeight: "600" },
+    chipActive: { backgroundColor: colors.accentPrimary, borderColor: colors.accentPrimary },
+    chipText: { color: colors.textSecondary, fontWeight: "600", fontSize: 13 },
+    chipTextActive: { color: "#ffffff" },
     toolbar: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingHorizontal: 20,
-      paddingBottom: 18,
       gap: 8,
     },
     toggleGroup: { flexDirection: "row", gap: 6 },
@@ -250,7 +280,7 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.border,
     },
     sortButtonText: { color: colors.textSecondary, fontSize: 12, fontWeight: "600" },
-    centered: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+    centered: { alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 40 },
     error: { color: colors.scoreLow },
     retryButton: {
       borderColor: colors.border,
@@ -260,8 +290,8 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 10,
     },
     retryText: { color: colors.textPrimary },
-    map: { flex: 1 },
-    list: { paddingHorizontal: 20, paddingBottom: 20, gap: 12 },
+    map: { height: 280, marginHorizontal: 20, borderRadius: 20, overflow: "hidden" },
+    list: { paddingHorizontal: 20, gap: 12 },
     emptyText: { color: colors.textSecondary, textAlign: "center", marginTop: 24 },
     card: {
       flexDirection: "row",
