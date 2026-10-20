@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { CreatorStats, SpotVideo, VideoPlatform } from "@spot/shared";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
+import { resolveVideoLink } from "@/lib/video-link";
 
 export interface CreatorVideo extends SpotVideo {
   spot_name: string;
@@ -75,11 +76,19 @@ export function useCreator(enabled: boolean): CreatorState {
     isCooperation: boolean;
   }): Promise<string | null> {
     if (!session) return "Nicht angemeldet";
+
+    // Kurzlinks (z.B. TikToks "vm.tiktok.com/...") aendern sich bei jedem
+    // neuen Teilen -- vor dem Speichern auf die stabile, kanonische URL
+    // aufloesen, damit die Spot-Suche per Link spaeter zuverlaessig
+    // funktioniert (siehe src/lib/video-link.ts).
+    const resolved = await resolveVideoLink(input.url);
+    const videoUrl = resolved?.canonicalUrl ?? input.url;
+
     const { error } = await supabase.from("videos").insert({
       spot_id: input.spotId,
       creator_id: session.user.id,
       platform: input.platform,
-      video_url: input.url,
+      video_url: videoUrl,
       title: input.title || null,
       is_cooperation: input.isCooperation,
     });

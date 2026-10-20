@@ -1,27 +1,11 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { looksLikeVideoLink, resolveVideoLink } from "@/lib/video-link";
 
 export interface SpotSearchResult {
   id: string;
   name: string;
   city: string;
-}
-
-function looksLikeLink(input: string): boolean {
-  return /^https?:\/\//i.test(input.trim()) || /(tiktok\.com|instagram\.com|youtu\.be)/i.test(input);
-}
-
-function extractVideoId(url: string): string | null {
-  const tiktok = url.match(/tiktok\.com\/@[\w.-]+\/video\/(\d+)/);
-  if (tiktok) return tiktok[1];
-
-  const instagram = url.match(/instagram\.com\/(?:reel|p|tv)\/([A-Za-z0-9_-]+)/);
-  if (instagram) return instagram[1];
-
-  const youtube = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-  if (youtube) return youtube[1];
-
-  return null;
 }
 
 interface SpotSearchState {
@@ -48,26 +32,20 @@ export function useSpotSearch(): SpotSearchState {
     setLoading(true);
     setLinkNotFound(false);
 
-    if (looksLikeLink(trimmed)) {
-      let resolvedUrl = trimmed;
-      let videoId = extractVideoId(trimmed);
+    if (looksLikeVideoLink(trimmed)) {
+      const resolved = await resolveVideoLink(trimmed);
 
-      if (!videoId) {
-        try {
-          const response = await fetch(trimmed, { redirect: "follow" });
-          resolvedUrl = response.url || trimmed;
-          videoId = extractVideoId(resolvedUrl);
-        } catch {
-          // Kurzlink konnte nicht aufgeloest werden -- unten mit der
-          // Original-URL weitersuchen.
-        }
+      if (!resolved) {
+        setLoading(false);
+        setResults([]);
+        setLinkNotFound(true);
+        return { matchedSpotId: null };
       }
 
-      const searchTerm = videoId ?? resolvedUrl;
       const { data } = await supabase
         .from("videos")
         .select("spot_id")
-        .ilike("video_url", `%${searchTerm}%`)
+        .ilike("video_url", `%${resolved.id}%`)
         .limit(1)
         .maybeSingle();
 

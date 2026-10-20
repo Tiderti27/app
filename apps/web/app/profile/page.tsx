@@ -226,6 +226,36 @@ function ProfileForm() {
         </div>
 
         <div className="card form-section">
+          <span className="form-section-title">Fotos</span>
+          {!spotId ? (
+            <span className="form-section-hint">Speichere zuerst die Grunddaten, um Fotos hochzuladen.</span>
+          ) : (
+            <>
+              {photos.length > 0 && (
+                <div className="photo-grid">
+                  {photos.map((url) => (
+                    <div key={url} className="photo-thumb">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="" />
+                      <button type="button" onClick={() => handlePhotoRemove(url)} className="photo-thumb-remove">
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <label className="photo-dropzone">
+                <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} disabled={uploading} />
+                <span className="photo-dropzone-title">{uploading ? "Lädt hoch..." : "Fotos hinzufügen"}</span>
+                <span className="photo-dropzone-hint">Klicken und aus deinen Dateien/Galerie auswählen (JPG, PNG)</span>
+              </label>
+              {photoError && <span className="error-text">{photoError}</span>}
+            </>
+          )}
+        </div>
+
+        <div className="card form-section">
           <span className="form-section-title">Standort</span>
 
           <label>
@@ -264,43 +294,6 @@ function ProfileForm() {
             Bis zur Google-Places-Anbindung (docs/spec.md Abschnitt 9) manuell eintragen, z.B. per Rechtsklick auf
             Google Maps.
           </span>
-        </div>
-
-        <div className="card form-section">
-          <span className="form-section-title">Fotos</span>
-          {!spotId ? (
-            <span className="form-section-hint">Speichere zuerst dein Profil, um Fotos hochzuladen.</span>
-          ) : (
-            <>
-              {photos.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                  {photos.map((url) => (
-                    <div key={url} style={{ position: "relative" }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt=""
-                        style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 10 }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handlePhotoRemove(url)}
-                        className="pill-button reject"
-                        style={{ position: "absolute", top: 4, right: 4, padding: "2px 8px" }}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <label>
-                {uploading ? "Lädt hoch..." : "Fotos hinzufügen"}
-                <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} disabled={uploading} />
-              </label>
-              {photoError && <span className="error-text">{photoError}</span>}
-            </>
-          )}
         </div>
 
         <div className="card form-section">
