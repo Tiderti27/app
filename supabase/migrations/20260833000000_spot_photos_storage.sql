@@ -19,7 +19,11 @@ create policy "spot_photos_owner_insert" on storage.objects
       or exists (
         select 1 from spots s
         where s.claimed_by = auth.uid()
-          and (storage.foldername(name))[1] = s.id::text
+          -- "objects.name" muss qualifiziert werden: "spots" hat selbst eine
+          -- Spalte "name" (Laden-Name), die ein unqualifiziertes "name" in
+          -- dieser Subquery sonst faelschlich verdeckt (shadowing) -- dann
+          -- wuerde hier der Ladenname statt des echten Datei-Pfads geprueft.
+          and (storage.foldername(objects.name))[1] = s.id::text
       )
     )
   );
@@ -32,7 +36,7 @@ create policy "spot_photos_owner_delete" on storage.objects
       or exists (
         select 1 from spots s
         where s.claimed_by = auth.uid()
-          and (storage.foldername(name))[1] = s.id::text
+          and (storage.foldername(objects.name))[1] = s.id::text
       )
     )
   );
