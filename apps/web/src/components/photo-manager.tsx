@@ -25,17 +25,20 @@ export function PhotoManager({
   const [status, setStatus] = useState<string | null>(null);
 
   async function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = event.target.files;
+    // Erst in ein eigenstaendiges Array kopieren, DANACH das Input-Feld
+    // zuruecksetzen -- in Safari teilt sich event.target.value = "" sonst
+    // dasselbe FileList-Objekt und leert es sofort mit, bevor wir die
+    // Dateien ueberhaupt auslesen konnten.
+    const list = Array.from(event.target.files ?? []);
     event.target.value = "";
-    setStatus(`onChange ausgelöst, ${files?.length ?? 0} Datei(en) erkannt.`);
+    setStatus(`onChange ausgelöst, ${list.length} Datei(en) erkannt.`);
 
-    if (!files || files.length === 0 || !spotId) {
+    if (list.length === 0 || !spotId) {
       setStatus((s) => `${s} Abgebrochen (spotId: ${spotId ?? "fehlt"}).`);
       return;
     }
 
     setError(null);
-    const list = Array.from(files);
     const [first, ...rest] = list;
     setQueue(rest);
     setStatus((s) => `${s} Lese "${first.name}" (${first.type || "unbekannter Typ"})...`);
