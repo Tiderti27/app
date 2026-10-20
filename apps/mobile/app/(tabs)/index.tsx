@@ -9,6 +9,8 @@ import { useTheme } from "@/context/theme-context";
 import { CategoryIcon, PinIcon, SortIcon, UserIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
 import { SpotCarousel } from "@/components/spot-carousel";
+import { SpotThumb } from "@/components/spot-thumb";
+import { SpotSearchBar } from "@/components/spot-search-bar";
 
 type ViewMode = "map" | "list";
 type SortMode = "score" | "distance" | "newest";
@@ -84,6 +86,8 @@ export default function MapScreen() {
           <UserIcon size={16} color={colors.textSecondary} />
         </Pressable>
       </View>
+
+      <SpotSearchBar colors={colors} />
 
       <FlatList
         horizontal
@@ -177,9 +181,15 @@ export default function MapScreen() {
           {sortedSpots.map((item) => (
             <Link key={item.id} href={`/spot/${item.id}`} asChild>
               <Pressable style={styles.card}>
-                <View style={styles.cardIcon}>
-                  <CategoryIcon category={item.category} size={24} color={colors.textSecondary} />
-                </View>
+                <SpotThumb
+                  photoUrl={item.photos[0]}
+                  category={item.category}
+                  bgColor={colors.bgElevated}
+                  iconColor={colors.textSecondary}
+                  size={64}
+                  iconSize={24}
+                  style={styles.cardIcon}
+                />
                 <View style={styles.cardBody}>
                   <View style={styles.cardHeader}>
                     <Text style={styles.cardTitle} numberOfLines={1}>

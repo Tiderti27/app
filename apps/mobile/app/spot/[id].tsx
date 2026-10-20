@@ -1,15 +1,17 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import type { ColorPalette, VideoPlatform } from "@spot/shared";
+import { ActivityIndicator, Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import type { ColorPalette, SpotVideo, VideoPlatform } from "@spot/shared";
 import { useSpotDetail } from "@/hooks/use-spot-detail";
 import { useTheme } from "@/context/theme-context";
 import { supabase } from "@/lib/supabase";
 import { BackIcon, CategoryIcon, ClockIcon, HeartIcon, PlayIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
 import { PromotionSection } from "@/components/promotion-section";
+import { VideoEmbedModal } from "@/components/video-embed-modal";
 
 const RATING_PRESETS = [60, 75, 85, 95, 100];
+const HERO_WIDTH = Dimensions.get("window").width;
 
 const PLATFORM_LABEL: Record<VideoPlatform, string> = {
   tiktok: "TikTok",
@@ -23,6 +25,7 @@ export default function SpotDetailScreen() {
   const heroBg = mode === "light" ? "#ece7f5" : "#161320";
   const styles = useMemo(() => createStyles(colors, heroBg), [colors, heroBg]);
   const { spot, videos, myRating, saved, loading, submitRating, toggleSave } = useSpotDetail(id);
+  const [activeVideo, setActiveVideo] = useState<SpotVideo | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -48,7 +51,15 @@ export default function SpotDetailScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} stickyHeaderIndices={[]}>
       <View style={styles.hero}>
-        <CategoryIcon category={spot.category} size={44} color={colors.border} />
+        {spot.photos.length > 0 ? (
+          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.heroGallery}>
+            {spot.photos.map((url) => (
+              <Image key={url} source={{ uri: url }} style={styles.heroImage} resizeMode="cover" />
+            ))}
+          </ScrollView>
+        ) : (
+          <CategoryIcon category={spot.category} size={44} color={colors.border} />
+        )}
         <Pressable style={[styles.heroButton, styles.heroButtonLeft]} onPress={() => {}}>
           <BackIcon size={18} color={colors.textPrimary} />
         </Pressable>
@@ -107,7 +118,7 @@ export default function SpotDetailScreen() {
             <Text style={styles.sectionTitle}>Videos</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
               {videos.map((video) => (
-                <Pressable key={video.id} style={styles.videoCard} onPress={() => Linking.openURL(video.video_url)}>
+                <Pressable key={video.id} style={styles.videoCard} onPress={() => setActiveVideo(video)}>
                   <View style={styles.videoThumb}>
                     <PlayIcon size={20} color={colors.textPrimary} />
                   </View>
@@ -133,6 +144,16 @@ export default function SpotDetailScreen() {
           </View>
         )}
       </View>
+
+      {activeVideo && (
+        <VideoEmbedModal
+          visible={Boolean(activeVideo)}
+          platform={activeVideo.platform}
+          url={activeVideo.video_url}
+          colors={colors}
+          onClose={() => setActiveVideo(null)}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -147,7 +168,10 @@ function createStyles(colors: ColorPalette, heroBg: string) {
       backgroundColor: heroBg,
       alignItems: "center",
       justifyContent: "center",
+      overflow: "hidden",
     },
+    heroGallery: { width: "100%", height: "100%" },
+    heroImage: { width: HERO_WIDTH, height: 190 },
     heroButton: {
       position: "absolute",
       top: 18,

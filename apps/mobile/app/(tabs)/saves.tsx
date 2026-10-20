@@ -4,7 +4,7 @@ import { Link } from "expo-router";
 import type { ColorPalette } from "@spot/shared";
 import { useSaves } from "@/hooks/use-saves";
 import { useTheme } from "@/context/theme-context";
-import { CategoryIcon } from "@/components/icons";
+import { SpotThumb } from "@/components/spot-thumb";
 import { ScoreBadge } from "@/components/score-badge";
 
 export default function SavesScreen() {
@@ -30,9 +30,15 @@ export default function SavesScreen() {
       renderItem={({ item }) => (
         <Link href={`/spot/${item.id}`} asChild>
           <Pressable style={styles.card}>
-            <View style={styles.cardIcon}>
-              <CategoryIcon category={item.category} size={24} color={colors.textSecondary} />
-            </View>
+            <SpotThumb
+              photoUrl={item.photos[0]}
+              category={item.category}
+              bgColor={colors.bgElevated}
+              iconColor={colors.textSecondary}
+              size={64}
+              iconSize={24}
+              style={styles.cardIcon}
+            />
             <View style={styles.cardBody}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle} numberOfLines={1}>

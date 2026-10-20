@@ -30,6 +30,15 @@ export function GiftIcon({ size = 18, color }: IconProps) {
   );
 }
 
+export function SearchIcon({ size = 18, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={11} cy={11} r={7} stroke={color} {...STROKE} />
+      <Path d="M20 20l-4.3-4.3" stroke={color} {...STROKE} />
+    </Svg>
+  );
+}
+
 export function SortIcon({ size = 15, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

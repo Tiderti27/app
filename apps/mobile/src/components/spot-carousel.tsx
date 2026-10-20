@@ -1,8 +1,8 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Link } from "expo-router";
 import type { ColorPalette, SpotWithDistance } from "@spot/shared";
-import { CategoryIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
+import { SpotThumb } from "@/components/spot-thumb";
 
 export function SpotCarousel({
   title,
@@ -27,9 +27,15 @@ export function SpotCarousel({
         renderItem={({ item }) => (
           <Link href={`/spot/${item.id}`} asChild>
             <Pressable style={styles.card}>
-              <View style={styles.cardIcon}>
-                <CategoryIcon category={item.category} size={22} color={colors.textSecondary} />
-              </View>
+              <SpotThumb
+                photoUrl={item.photos[0]}
+                category={item.category}
+                bgColor={colors.bgElevated}
+                iconColor={colors.textSecondary}
+                size={44}
+                iconSize={22}
+                style={styles.cardIcon}
+              />
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle} numberOfLines={1}>
                   {item.name}
