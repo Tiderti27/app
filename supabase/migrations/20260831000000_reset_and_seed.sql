@@ -110,20 +110,20 @@ insert into spots (
 -- Bewertung neu berechnet statt des oben gesetzten Platzhalterwerts.)
 
 insert into saves (user_id, spot_id)
-select 'a1000000-0000-4000-8000-000000000003', id from spots where name = 'Café Lindenhof'
+select 'a1000000-0000-4000-8000-000000000003'::uuid, id from spots where name = 'Café Lindenhof'
 union all
-select 'a1000000-0000-4000-8000-000000000003', id from spots where name = 'Mode Boutique Fein & Fesch'
+select 'a1000000-0000-4000-8000-000000000003'::uuid, id from spots where name = 'Mode Boutique Fein & Fesch'
 union all
-select 'a1000000-0000-4000-8000-000000000003', id from spots where name = 'Kletterpark Limpurger Berge'
+select 'a1000000-0000-4000-8000-000000000003'::uuid, id from spots where name = 'Kletterpark Limpurger Berge'
 union all
-select 'a1000000-0000-4000-8000-000000000004', id from spots where name = 'Burgerschmiede Gaildorf'
+select 'a1000000-0000-4000-8000-000000000004'::uuid, id from spots where name = 'Burgerschmiede Gaildorf'
 union all
-select 'a1000000-0000-4000-8000-000000000004', id from spots where name = 'Bar Kocherkante'
+select 'a1000000-0000-4000-8000-000000000004'::uuid, id from spots where name = 'Bar Kocherkante'
 union all
-select 'a1000000-0000-4000-8000-000000000004', id from spots where name = 'Galerie Kocherlicht';
+select 'a1000000-0000-4000-8000-000000000004'::uuid, id from spots where name = 'Galerie Kocherlicht';
 
 insert into ratings (spot_id, user_id, score)
-select id, 'a1000000-0000-4000-8000-000000000003', 90 from spots where name = 'Burgerschmiede Gaildorf';
+select id, 'a1000000-0000-4000-8000-000000000003'::uuid, 90 from spots where name = 'Burgerschmiede Gaildorf';
 
 insert into ratings (spot_id, user_id, score)
-select id, 'a1000000-0000-4000-8000-000000000004', 75 from spots where name = 'Bar Kocherkante';
+select id, 'a1000000-0000-4000-8000-000000000004'::uuid, 75 from spots where name = 'Bar Kocherkante';
