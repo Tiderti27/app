@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import type { ColorPalette, SpotVideo, VideoPlatform } from "@spot/shared";
+import { formatOpeningHours, type ColorPalette, type SpotVideo, type VideoPlatform } from "@spot/shared";
 import { useSpotDetail } from "@/hooks/use-spot-detail";
 import { useTheme } from "@/context/theme-context";
 import { supabase } from "@/lib/supabase";
@@ -84,6 +84,9 @@ export default function SpotDetailScreen() {
           <Text style={styles.text}>
             {spot.address}, {spot.city} · {spot.score_count} Bewertungen
           </Text>
+          {(spot.phone || spot.website) && (
+            <Text style={styles.text}>{[spot.phone, spot.website].filter(Boolean).join(" · ")}</Text>
+          )}
           {spot.description ? <Text style={styles.description}>{spot.description}</Text> : null}
         </View>
 
@@ -138,9 +141,17 @@ export default function SpotDetailScreen() {
         {spot.opening_hours && (
           <View style={styles.hoursRow}>
             <ClockIcon size={15} color={colors.accentPrimary} />
-            <Text style={styles.hoursText}>
-              {Object.values(spot.opening_hours).filter(Boolean).join(" · ") || "Keine Öffnungszeiten hinterlegt"}
-            </Text>
+            <View style={styles.hoursLines}>
+              {formatOpeningHours(spot.opening_hours).length > 0 ? (
+                formatOpeningHours(spot.opening_hours).map((line) => (
+                  <Text key={line} style={styles.hoursText}>
+                    {line}
+                  </Text>
+                ))
+              ) : (
+                <Text style={styles.hoursText}>Keine Öffnungszeiten hinterlegt</Text>
+              )}
+            </View>
           </View>
         )}
       </View>
@@ -252,7 +263,7 @@ function createStyles(colors: ColorPalette, heroBg: string) {
     cooperationBadge: { color: colors.scoreMid, fontSize: 11, fontWeight: "600" },
     hoursRow: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       gap: 8,
       backgroundColor: colors.bgCard,
       borderColor: colors.border,
@@ -260,6 +271,7 @@ function createStyles(colors: ColorPalette, heroBg: string) {
       borderRadius: 14,
       padding: 14,
     },
+    hoursLines: { flex: 1, gap: 4 },
     hoursText: { color: colors.textPrimary, fontSize: 12.5, fontWeight: "600", flexShrink: 1 },
   });
 }

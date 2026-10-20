@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AuthGate } from "@/components/auth-gate";
+import { useAuth } from "@/context/auth-context";
 import { useBusinessStats } from "@/hooks/use-business-stats";
+import { supabase } from "@/lib/supabase";
 
 const ICONS = {
   views: (
@@ -24,7 +27,21 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const { session } = useAuth();
   const { stats, todayRedemptions, loading } = useBusinessStats(7);
+  const [cover, setCover] = useState<{ name: string; photo: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!session) return;
+    supabase
+      .from("spots_view")
+      .select("name, photos")
+      .eq("claimed_by", session.user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCover({ name: data.name as string, photo: (data.photos as string[])[0] ?? null });
+      });
+  }, [session]);
 
   const cards = [
     { label: "Profilaufrufe (7 Tage)", value: stats?.profile_views ?? 0, icon: ICONS.views },
@@ -35,8 +52,11 @@ function DashboardContent() {
 
   return (
     <main className="page">
-      <div>
-        <h1 className="page-title">Dashboard</h1>
+      <div
+        className="dashboard-cover"
+        style={cover?.photo ? { backgroundImage: `linear-gradient(0deg, rgba(11,11,16,0.75), rgba(11,11,16,0.4)), url(${cover.photo})` } : undefined}
+      >
+        <h1 className="page-title">{cover?.name ?? "Dashboard"}</h1>
         <p className="page-subtitle">Überblick über die letzten 7 Tage</p>
       </div>
 

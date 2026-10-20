@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
 import type { ColorPalette, VideoPlatform } from "@spot/shared";
@@ -30,10 +31,28 @@ function directEmbedUri(platform: VideoPlatform, url: string): string | null {
   return null;
 }
 
-function instagramEmbedHtml(url: string): string {
-  const body = `<blockquote class="instagram-media" data-instgrm-permalink="${url}" style="margin:0 auto;"></blockquote><script async src="https://www.instagram.com/embed.js"></script>`;
+function fallbackEmbedHtml(platform: VideoPlatform, url: string): string {
+  const body =
+    platform === "tiktok"
+      ? `<blockquote class="tiktok-embed" cite="${url}" style="max-width:605px;min-width:325px;margin:0 auto;"><section></section></blockquote><script async src="https://www.tiktok.com/embed.js"></script>`
+      : `<blockquote class="instagram-media" data-instgrm-permalink="${url}" style="margin:0 auto;"></blockquote><script async src="https://www.instagram.com/embed.js"></script>`;
+
   return `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style></head><body>${body}</body></html>`;
 }
+
+// TikToks eigene Embed-Seite liefert bei zu vielen Aufrufen vom selben
+// Netzwerk/Geraet ein HTTP 200 mit Fehlertext im Body ("Rate limit
+// exceeded") statt eines HTTP-Fehlers -- onError/onHttpError feuern dann
+// nicht. Deshalb den sichtbaren Text pruefen und per postMessage melden.
+const RATE_LIMIT_CHECK_SCRIPT = `
+  setTimeout(function () {
+    var text = (document.body && document.body.innerText || "").toLowerCase();
+    if (text.indexOf("rate limit") !== -1 || text.indexOf("ratelimit") !== -1) {
+      window.ReactNativeWebView.postMessage("rate-limited");
+    }
+  }, 1500);
+  true;
+`;
 
 export function VideoEmbedModal({
   visible,
@@ -50,6 +69,7 @@ export function VideoEmbedModal({
 }) {
   const styles = createStyles(colors);
   const directUri = directEmbedUri(platform, url);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -58,16 +78,38 @@ export function VideoEmbedModal({
           <Pressable style={styles.closeButton} onPress={onClose}>
             <BackIcon size={18} color={colors.textPrimary} />
           </Pressable>
-          <Pressable onPress={() => Linking.openURL(url)}>
+          <Pressable style={styles.externalButton} onPress={() => Linking.openURL(url)}>
             <Text style={styles.openExternal}>Extern öffnen</Text>
           </Pressable>
         </View>
-        <WebView
-          source={directUri ? { uri: directUri } : { html: instagramEmbedHtml(url) }}
-          style={styles.webview}
-          allowsInlineMediaPlayback
-          mediaPlaybackRequiresUserAction={false}
-        />
+
+        {loadFailed ? (
+          <View style={styles.failedBox}>
+            <Text style={styles.failedTitle}>Video konnte nicht geladen werden</Text>
+            <Text style={styles.failedText}>
+              Das kann an einem vorübergehenden Limit von {platform === "tiktok" ? "TikTok" : "Instagram"} liegen.
+              Versuch es gleich nochmal oder öffne das Video extern.
+            </Text>
+            <Pressable style={styles.retryButton} onPress={() => Linking.openURL(url)}>
+              <Text style={styles.retryButtonText}>Extern öffnen</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <WebView
+            source={directUri ? { uri: directUri } : { html: fallbackEmbedHtml(platform, url) }}
+            style={styles.webview}
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            onError={() => setLoadFailed(true)}
+            onHttpError={() => setLoadFailed(true)}
+            onMessage={(event) => {
+              if (event.nativeEvent.data === "rate-limited") setLoadFailed(true);
+            }}
+            injectedJavaScript={RATE_LIMIT_CHECK_SCRIPT}
+          />
+        )}
+
+        <Text style={styles.hint}>Lädt nicht? Oben rechts "Extern öffnen" nutzen.</Text>
       </View>
     </Modal>
   );
@@ -92,7 +134,25 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
       justifyContent: "center",
     },
-    openExternal: { color: colors.accentPrimary, fontWeight: "700", fontSize: 13 },
+    externalButton: {
+      backgroundColor: colors.accentPrimary,
+      borderRadius: 999,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+    },
+    openExternal: { color: "#ffffff", fontWeight: "700", fontSize: 13 },
     webview: { flex: 1, backgroundColor: "#000000" },
+    hint: { color: "#8a8a8a", fontSize: 11, textAlign: "center", paddingVertical: 10 },
+    failedBox: { flex: 1, alignItems: "center", justifyContent: "center", gap: 14, padding: 32 },
+    failedTitle: { color: "#ffffff", fontSize: 16, fontWeight: "700", textAlign: "center" },
+    failedText: { color: "#b5b5b5", fontSize: 13, textAlign: "center", lineHeight: 19 },
+    retryButton: {
+      backgroundColor: colors.accentPrimary,
+      borderRadius: 12,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      marginTop: 6,
+    },
+    retryButtonText: { color: "#ffffff", fontWeight: "700", fontSize: 14 },
   });
 }
