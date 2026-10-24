@@ -1,0 +1,19 @@
+{
+  "name": "spot",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Spot - Karte fuer virale Orte aus Social Media, mit Community-Score und Creator-Rabattaktionen",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall-fixes.js",
+    "mobile": "npm run start --workspace=apps/mobile",
+    "web": "npm run dev --workspace=apps/web",
+    "build:shared": "npm run build --workspace=packages/shared"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
