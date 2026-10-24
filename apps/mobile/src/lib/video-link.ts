@@ -6,7 +6,12 @@ export interface ResolvedVideoLink {
   canonicalUrl: string;
 }
 
-function extractFromText(text: string): ResolvedVideoLink | null {
+function extractFromText(rawText: string): ResolvedVideoLink | null {
+  // TikToks eigenes Seiten-HTML bettet die URL oft als escapetes JSON ein
+  // (z.B. "tiktok.com/@user/video/123" statt echter "/"
+  // Zeichen) -- ohne diese Normalisierung findet der Regex nie einen Treffer.
+  const text = rawText.replace(/\\u002[Ff]/g, "/").replace(/\\\//g, "/");
+
   const tiktokWithUser = text.match(/tiktok\.com\/@([\w.-]+)\/video\/(\d+)/);
   if (tiktokWithUser) {
     return {
@@ -68,9 +73,22 @@ export async function resolveVideoLink(input: string): Promise<ResolvedVideoLink
   if (!looksLikeVideoLink(trimmed)) return null;
 
   try {
-    const response = await fetch(trimmed);
+    // Ein realistischer mobiler Browser-User-Agent, damit TikTok einen
+    // echten HTTP-Redirect liefert statt einer Bot-Check-/Zwischenseite.
+    const response = await fetch(trimmed, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+      },
+    });
+    // response.url ist die tatsaechlich aufgeloeste Redirect-Zieladresse von
+    // TikToks Kurzlink-Server -- zuverlaessiger als der Seiteninhalt, der
+    // escapetes JSON statt klarer URLs enthaelt (siehe extractFromText).
+    const fromRedirectUrl = extractFromText(response.url);
+    if (fromRedirectUrl) return fromRedirectUrl;
+
     const html = await response.text();
-    return extractFromText(html) ?? extractFromText(response.url);
+    return extractFromText(html);
   } catch {
     return null;
   }
