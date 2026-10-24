@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { formatOpeningHours, type ColorPalette, type SpotVideo, type VideoPlatform } from "@spot/shared";
 import { useSpotDetail } from "@/hooks/use-spot-detail";
 import { useTheme } from "@/context/theme-context";
@@ -121,7 +121,22 @@ export default function SpotDetailScreen() {
             <Text style={styles.sectionTitle}>Videos</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
               {videos.map((video) => (
-                <Pressable key={video.id} style={styles.videoCard} onPress={() => setActiveVideo(video)}>
+                <Pressable
+                  key={video.id}
+                  style={styles.videoCard}
+                  onPress={() => {
+                    // TikToks Embed-Endpunkt ist auf unserem Testnetz dauerhaft
+                    // ratelimitiert (HTTP 429) -- statt erst einen In-App-Embed
+                    // zu versuchen, der zuverlaessig fehlschlaegt, oeffnen wir
+                    // TikTok-Videos direkt extern. Instagram/YouTube laufen
+                    // weiterhin ueber den In-App-Embed.
+                    if (video.platform === "tiktok") {
+                      Linking.openURL(video.video_url);
+                    } else {
+                      setActiveVideo(video);
+                    }
+                  }}
+                >
                   <View style={styles.videoThumb}>
                     <PlayIcon size={20} color={colors.textPrimary} />
                   </View>
