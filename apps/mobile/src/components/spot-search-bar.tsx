@@ -8,7 +8,7 @@ import { SearchIcon } from "@/components/icons";
 export function SpotSearchBar({ colors }: { colors: ColorPalette }) {
   const styles = createStyles(colors);
   const router = useRouter();
-  const { results, loading, linkNotFound, search, clear } = useSpotSearch();
+  const { results, loading, linkNotFound, noTextResults, search, clear } = useSpotSearch();
   const [query, setQuery] = useState("");
 
   async function handleSubmit() {
@@ -47,6 +47,7 @@ export function SpotSearchBar({ colors }: { colors: ColorPalette }) {
       </View>
 
       {linkNotFound && <Text style={styles.hint}>Zu diesem Link wurde kein verknüpfter Spot gefunden.</Text>}
+      {noTextResults && <Text style={styles.hint}>Keine Spots mit diesem Namen gefunden.</Text>}
 
       {results.length > 0 && (
         <View style={styles.resultsBox}>

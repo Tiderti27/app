@@ -2,7 +2,14 @@ import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import { Link, useRouter } from "expo-router";
-import { SPOT_CATEGORIES, scoreColor, type ColorPalette, type SpotCategory, type SpotWithDistance } from "@spot/shared";
+import {
+  isOpenNow,
+  SPOT_CATEGORIES,
+  scoreColor,
+  type ColorPalette,
+  type SpotCategory,
+  type SpotWithDistance,
+} from "@spot/shared";
 import { useNearbySpots } from "@/hooks/use-nearby-spots";
 import { useSaves } from "@/hooks/use-saves";
 import { useTheme } from "@/context/theme-context";
@@ -33,17 +40,19 @@ export default function MapScreen() {
   const [activeCategory, setActiveCategory] = useState<SpotCategory | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("map");
   const [sortMode, setSortMode] = useState<SortMode>("distance");
+  const [openNowOnly, setOpenNowOnly] = useState(false);
 
   const { spots, location, loading, error, refresh } = useNearbySpots(activeCategory);
   const { spots: savedSpots } = useSaves();
 
   const sortedSpots = useMemo(() => {
-    const copy = [...spots];
+    const filtered = openNowOnly ? spots.filter((spot) => isOpenNow(spot.opening_hours)) : spots;
+    const copy = [...filtered];
     if (sortMode === "score") copy.sort((a, b) => b.score - a.score);
     else if (sortMode === "newest") copy.sort((a, b) => b.created_at.localeCompare(a.created_at));
     else copy.sort((a, b) => a.distance_meters - b.distance_meters);
     return copy;
-  }, [spots, sortMode]);
+  }, [spots, sortMode, openNowOnly]);
 
   const popularSpots = useMemo(() => [...spots].sort((a, b) => b.score - a.score).slice(0, 10), [spots]);
   const nearbySpots = useMemo(
@@ -125,14 +134,23 @@ export default function MapScreen() {
           </Pressable>
         </View>
 
-        {viewMode === "list" && (
-          <Pressable style={styles.sortButton} onPress={() => setSortMode(nextSortMode(sortMode))}>
-            <SortIcon size={13} color={colors.textSecondary} />
-            <Text style={styles.sortButtonText}>
-              {SORT_OPTIONS.find((option) => option.value === sortMode)?.label}
-            </Text>
+        <View style={styles.toolbarRight}>
+          <Pressable
+            style={[styles.openNowChip, openNowOnly && styles.openNowChipActive]}
+            onPress={() => setOpenNowOnly((prev) => !prev)}
+          >
+            <Text style={[styles.openNowChipText, openNowOnly && styles.openNowChipTextActive]}>Jetzt geöffnet</Text>
           </Pressable>
-        )}
+
+          {viewMode === "list" && (
+            <Pressable style={styles.sortButton} onPress={() => setSortMode(nextSortMode(sortMode))}>
+              <SortIcon size={13} color={colors.textSecondary} />
+              <Text style={styles.sortButtonText}>
+                {SORT_OPTIONS.find((option) => option.value === sortMode)?.label}
+              </Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {loading && (
@@ -177,7 +195,13 @@ export default function MapScreen() {
 
       {!loading && !error && viewMode === "list" && (
         <View style={styles.list}>
-          {sortedSpots.length === 0 && <Text style={styles.emptyText}>Keine Spots in deiner Naehe gefunden.</Text>}
+          {sortedSpots.length === 0 && (
+            <Text style={styles.emptyText}>
+              {openNowOnly
+                ? "Gerade ist nichts in deiner Naehe geoeffnet. Versuch's ohne den \"Jetzt geoeffnet\"-Filter."
+                : "Keine Spots in deiner Naehe gefunden."}
+            </Text>
+          )}
           {sortedSpots.map((item) => (
             <Link key={item.id} href={`/spot/${item.id}`} asChild>
               <Pressable style={styles.card}>
@@ -267,6 +291,18 @@ function createStyles(colors: ColorPalette) {
       gap: 8,
     },
     toggleGroup: { flexDirection: "row", gap: 6 },
+    toolbarRight: { flexDirection: "row", alignItems: "center", gap: 8 },
+    openNowChip: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 8,
+      backgroundColor: colors.bgCard,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    openNowChipActive: { backgroundColor: colors.scoreHigh + "22", borderColor: colors.scoreHigh },
+    openNowChipText: { color: colors.textSecondary, fontSize: 12, fontWeight: "600" },
+    openNowChipTextActive: { color: colors.scoreHigh },
     toggleButton: {
       paddingHorizontal: 10,
       paddingVertical: 6,

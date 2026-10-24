@@ -8,6 +8,7 @@ import { useUserProfile } from "@/context/user-profile-context";
 import { useAdmin } from "@/hooks/use-admin";
 import { useAdminSpots } from "@/hooks/use-admin-spots";
 import { useAdminReports } from "@/hooks/use-admin-reports";
+import { useAdminSpotClaims } from "@/hooks/use-admin-spot-claims";
 import { AdminSpotEditor } from "@/components/admin-spot-editor";
 
 const REPORT_TARGET_LABEL: Record<string, string> = { spot: "Spot", rating: "Bewertung", photo: "Foto" };
@@ -57,6 +58,7 @@ function AdminContent() {
     deleteSpot,
   } = useAdminSpots();
   const { reports, loading: reportsLoading, resolveReport } = useAdminReports();
+  const { claims, loading: claimsLoading, reviewClaim } = useAdminSpotClaims();
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [creatingSpot, setCreatingSpot] = useState(false);
 
@@ -65,6 +67,31 @@ function AdminContent() {
       <div>
         <h1 className="page-title">Admin</h1>
         <p className="page-subtitle">Plattform-Übersicht: Spots, Läden, Creator-Bewerbungen und Nutzerverwaltung</p>
+      </div>
+
+      <div className="card panel">
+        <span className="panel-title">Offene Spot-Anfragen {claims.length > 0 ? `(${claims.length})` : ""}</span>
+        {!claimsLoading && claims.length === 0 && (
+          <p style={{ margin: 0, color: "var(--text-tertiary)", fontSize: 13.5 }}>Keine offenen Anfragen.</p>
+        )}
+        {claims.map((claim) => (
+          <div key={claim.id} className="data-row">
+            <div className="data-row-main">
+              <span className="data-row-title">
+                @{claim.username} → {claim.spot_name}
+              </span>
+              {claim.message && <span className="data-row-meta">{claim.message}</span>}
+            </div>
+            <div className="data-row-actions">
+              <button className="pill-button reject" onClick={() => reviewClaim(claim.id, false)}>
+                Ablehnen
+              </button>
+              <button className="pill-button accept" onClick={() => reviewClaim(claim.id, true)}>
+                Freigeben
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="card panel">

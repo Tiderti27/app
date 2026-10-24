@@ -62,3 +62,53 @@ export function formatOpeningHours(hours: OpeningHours | null | undefined): stri
 
   return lines.map(({ time, days }) => `${formatDayList(days)} ${time}`);
 }
+
+function parseTimeToMinutes(value: string): number | null {
+  const match = value.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+/**
+ * Prueft, ob ein Spot gerade (nach lokaler Geraetezeit) geoeffnet hat.
+ * Erwartet Werte im Format "HH:MM-HH:MM"; Zeitraeume, die ueber Mitternacht
+ * gehen (z.B. "20:00-02:00"), werden korrekt behandelt. Fehlt ein Eintrag
+ * fuer den aktuellen Wochentag oder ist das Format ungueltig, gilt der Spot
+ * als geschlossen.
+ */
+export function isOpenNow(hours: OpeningHours | null | undefined, now: Date = new Date()): boolean {
+  if (!hours) return false;
+
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  // getDay(): 0=So, 1=Mo, ... -- DAY_ORDER ist Mo-So, daher Index -1 mod 7.
+  const todayIndex = (now.getDay() + 6) % 7;
+  const todayKey = DAY_ORDER[todayIndex];
+  const yesterdayKey = DAY_ORDER[(todayIndex + 6) % 7];
+
+  const todayRange = hours[todayKey];
+  if (todayRange) {
+    const [start, end] = todayRange.split("-").map((s) => s.trim());
+    const startMin = start ? parseTimeToMinutes(start) : null;
+    const endMin = end ? parseTimeToMinutes(end) : null;
+    if (startMin !== null && endMin !== null) {
+      if (endMin > startMin) {
+        if (nowMinutes >= startMin && nowMinutes < endMin) return true;
+      } else {
+        // Ueber Mitternacht hinaus geoeffnet (z.B. 20:00-02:00).
+        if (nowMinutes >= startMin) return true;
+      }
+    }
+  }
+
+  // Falls gestern ueber Mitternacht hinaus geoeffnet war, kann das auch
+  // den fruehen heutigen Morgen abdecken.
+  const yesterdayRange = hours[yesterdayKey];
+  if (yesterdayRange) {
+    const [start, end] = yesterdayRange.split("-").map((s) => s.trim());
+    const startMin = start ? parseTimeToMinutes(start) : null;
+    const endMin = end ? parseTimeToMinutes(end) : null;
+    if (startMin !== null && endMin !== null && endMin <= startMin && nowMinutes < endMin) return true;
+  }
+
+  return false;
+}

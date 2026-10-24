@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { SPOT_CATEGORIES, type OpeningHours, type Spot, type SpotCategory } from "@spot/shared";
 import { PhotoManager } from "@/components/photo-manager";
 import { MobileAppPreview } from "@/components/mobile-app-preview";
+import { SpotClaimSearch } from "@/components/spot-claim-search";
 
 const WEEKDAYS: { key: keyof OpeningHours; label: string }[] = [
   { key: "mon", label: "Montag" },
@@ -61,6 +62,8 @@ function ProfileForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [pendingClaimSpotName, setPendingClaimSpotName] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   useEffect(() => {
     if (!session) return;
@@ -91,6 +94,21 @@ function ProfileForm() {
         setLoading(false);
       });
   }, [session]);
+
+  useEffect(() => {
+    if (!session || spotId) return;
+
+    supabase
+      .from("spot_claims")
+      .select("*, spots(name)")
+      .eq("user_id", session.user.id)
+      .eq("status", "pending")
+      .maybeSingle()
+      .then(({ data }) => {
+        const row = data as (Record<string, unknown> & { spots: { name: string } | null }) | null;
+        if (row) setPendingClaimSpotName(row.spots?.name ?? "deinem Spot");
+      });
+  }, [session, spotId]);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -153,6 +171,35 @@ function ProfileForm() {
     return (
       <main className="page">
         <div className="card">Laden...</div>
+      </main>
+    );
+  }
+
+  if (!spotId && pendingClaimSpotName) {
+    return (
+      <main className="page">
+        <div>
+          <h1 className="page-title">Anfrage wartet auf Freigabe</h1>
+          <p className="page-subtitle">
+            Deine Anfrage für <strong>{pendingClaimSpotName}</strong> wird von einem Admin geprüft. Das kann etwas
+            dauern — schau später nochmal vorbei.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!spotId && !showCreateForm) {
+    return (
+      <main className="page">
+        <div>
+          <h1 className="page-title">Profil anlegen</h1>
+          <p className="page-subtitle">Diese Angaben sehen Nutzer:innen auf deinem Spot-Profil.</p>
+        </div>
+        <SpotClaimSearch
+          onClaimed={() => setPendingClaimSpotName("deinem Spot")}
+          onCreateNew={() => setShowCreateForm(true)}
+        />
       </main>
     );
   }

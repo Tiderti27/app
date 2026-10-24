@@ -247,6 +247,24 @@ export interface ReportWithSpot extends Report {
   spot_name: string;
 }
 
+export type SpotClaimStatus = "pending" | "approved" | "rejected";
+
+export interface SpotClaim {
+  id: string;
+  spot_id: string;
+  user_id: string;
+  message: string | null;
+  status: SpotClaimStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+export interface SpotClaimWithDetails extends SpotClaim {
+  spot_name: string;
+  username: string;
+}
+
 // Rueckgabe der RPC admin_business_overview()
 export interface AdminBusinessOverview {
   business_id: string;

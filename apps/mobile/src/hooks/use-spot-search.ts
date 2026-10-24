@@ -12,6 +12,7 @@ interface SpotSearchState {
   results: SpotSearchResult[];
   loading: boolean;
   linkNotFound: boolean;
+  noTextResults: boolean;
   search: (query: string) => Promise<{ matchedSpotId: string | null }>;
   clear: () => void;
 }
@@ -20,17 +21,20 @@ export function useSpotSearch(): SpotSearchState {
   const [results, setResults] = useState<SpotSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [linkNotFound, setLinkNotFound] = useState(false);
+  const [noTextResults, setNoTextResults] = useState(false);
 
   async function search(query: string): Promise<{ matchedSpotId: string | null }> {
     const trimmed = query.trim();
     if (!trimmed) {
       setResults([]);
       setLinkNotFound(false);
+      setNoTextResults(false);
       return { matchedSpotId: null };
     }
 
     setLoading(true);
     setLinkNotFound(false);
+    setNoTextResults(false);
 
     if (looksLikeVideoLink(trimmed)) {
       const resolved = await resolveVideoLink(trimmed);
@@ -63,7 +67,9 @@ export function useSpotSearch(): SpotSearchState {
       .ilike("name", `%${trimmed}%`)
       .limit(20);
 
-    setResults((data ?? []) as SpotSearchResult[]);
+    const matches = (data ?? []) as SpotSearchResult[];
+    setResults(matches);
+    setNoTextResults(matches.length === 0);
     setLoading(false);
     return { matchedSpotId: null };
   }
@@ -71,7 +77,8 @@ export function useSpotSearch(): SpotSearchState {
   function clear() {
     setResults([]);
     setLinkNotFound(false);
+    setNoTextResults(false);
   }
 
-  return { results, loading, linkNotFound, search, clear };
+  return { results, loading, linkNotFound, noTextResults, search, clear };
 }

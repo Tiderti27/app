@@ -6,6 +6,7 @@ import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "@/context/auth-context";
 import { ThemeProvider, useTheme } from "@/context/theme-context";
 import { parseRecoveryLink } from "@/lib/parse-recovery-link";
+import { useOnboarding } from "@/hooks/use-onboarding";
 
 export default function RootLayout() {
   return (
@@ -19,21 +20,25 @@ export default function RootLayout() {
 
 function RootNavigator() {
   const { session, loading, recoveryMode, setRecoveryMode, setSessionFromTokens } = useAuth();
+  const { hasSeenOnboarding } = useOnboarding();
   const { colors, mode } = useTheme();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || hasSeenOnboarding === null) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const onOnboarding = segments[0] === "onboarding";
 
-    if (!session && !inAuthGroup) {
+    if (!session && !hasSeenOnboarding && !onOnboarding) {
+      router.replace("/onboarding");
+    } else if (!session && !inAuthGroup && !onOnboarding) {
       router.replace("/(auth)/login");
     } else if (session && inAuthGroup && !recoveryMode) {
       router.replace("/(tabs)");
     }
-  }, [session, loading, segments, router, recoveryMode]);
+  }, [session, loading, hasSeenOnboarding, segments, router, recoveryMode]);
 
   useEffect(() => {
     async function handleUrl(url: string | null) {
@@ -50,7 +55,7 @@ function RootNavigator() {
     return () => subscription.remove();
   }, [router, setRecoveryMode, setSessionFromTokens]);
 
-  if (loading) {
+  if (loading || hasSeenOnboarding === null) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bgPrimary, alignItems: "center", justifyContent: "center" }}>
         <StatusBar style={mode === "light" ? "dark" : "light"} />
@@ -69,6 +74,7 @@ function RootNavigator() {
           contentStyle: { backgroundColor: colors.bgPrimary },
         }}
       >
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="spot/[id]" options={{ title: "Spot" }} />
