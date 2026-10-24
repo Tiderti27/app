@@ -5,10 +5,11 @@ import { formatOpeningHours, type ColorPalette, type SpotVideo, type VideoPlatfo
 import { useSpotDetail } from "@/hooks/use-spot-detail";
 import { useTheme } from "@/context/theme-context";
 import { supabase } from "@/lib/supabase";
-import { BackIcon, CategoryIcon, ClockIcon, HeartIcon, PlayIcon } from "@/components/icons";
+import { BackIcon, CategoryIcon, ClockIcon, FlagIcon, HeartIcon, PlayIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
 import { PromotionSection } from "@/components/promotion-section";
 import { VideoEmbedModal } from "@/components/video-embed-modal";
+import { ReportModal } from "@/components/report-modal";
 
 const RATING_PRESETS = [60, 75, 85, 95, 100];
 const HERO_WIDTH = Dimensions.get("window").width;
@@ -26,6 +27,7 @@ export default function SpotDetailScreen() {
   const styles = useMemo(() => createStyles(colors, heroBg), [colors, heroBg]);
   const { spot, videos, myRating, saved, loading, submitRating, toggleSave } = useSpotDetail(id);
   const [activeVideo, setActiveVideo] = useState<SpotVideo | null>(null);
+  const [reportVisible, setReportVisible] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -65,6 +67,9 @@ export default function SpotDetailScreen() {
         </Pressable>
         <Pressable style={[styles.heroButton, styles.heroButtonRight]} onPress={toggleSave}>
           <HeartIcon size={18} color={colors.accentPrimary} filled={saved} />
+        </Pressable>
+        <Pressable style={[styles.heroButton, styles.heroButtonFlag]} onPress={() => setReportVisible(true)}>
+          <FlagIcon size={16} color={colors.textSecondary} />
         </Pressable>
         <View style={styles.heroScore}>
           <ScoreBadge score={spot.score} colors={colors} size="large" />
@@ -180,6 +185,14 @@ export default function SpotDetailScreen() {
           onClose={() => setActiveVideo(null)}
         />
       )}
+
+      <ReportModal
+        visible={reportVisible}
+        spotId={spot.id}
+        photos={spot.photos}
+        colors={colors}
+        onClose={() => setReportVisible(false)}
+      />
     </ScrollView>
   );
 }
@@ -210,6 +223,7 @@ function createStyles(colors: ColorPalette, heroBg: string) {
     },
     heroButtonLeft: { left: 18 },
     heroButtonRight: { right: 18 },
+    heroButtonFlag: { right: 18, top: 64 },
     heroScore: { position: "absolute", left: 20, bottom: -26 },
     body: { padding: 20, paddingTop: 38, gap: 22 },
     infoSection: { gap: 8 },

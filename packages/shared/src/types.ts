@@ -226,6 +226,27 @@ export interface CreatorApplication {
   created_at: string;
 }
 
+export type ReportTargetType = "spot" | "rating" | "photo";
+export type ReportStatus = "open" | "resolved" | "dismissed";
+
+export interface Report {
+  id: string;
+  reporter_id: string;
+  target_type: ReportTargetType;
+  spot_id: string;
+  rating_id: string | null;
+  photo_url: string | null;
+  reason: string;
+  status: ReportStatus;
+  created_at: string;
+  resolved_at: string | null;
+  resolved_by: string | null;
+}
+
+export interface ReportWithSpot extends Report {
+  spot_name: string;
+}
+
 // Rueckgabe der RPC admin_business_overview()
 export interface AdminBusinessOverview {
   business_id: string;

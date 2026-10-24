@@ -75,6 +75,10 @@ export default function LoginScreen() {
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
+            <Link href="/(auth)/forgot-password" style={styles.forgotLink}>
+              Passwort vergessen?
+            </Link>
+
             <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
               {submitting ? (
                 <ActivityIndicator color="#ffffff" />
@@ -143,6 +147,7 @@ function createStyles(colors: ColorPalette) {
     },
     buttonText: { color: "#ffffff", fontWeight: "700", fontSize: 15 },
     error: { color: colors.scoreLow },
+    forgotLink: { color: colors.accentPrimary, fontWeight: "700", fontSize: 12.5, textAlign: "right" },
     footerRow: { flexDirection: "row", justifyContent: "center", gap: 6 },
     footerText: { color: colors.textSecondary, fontSize: 13.5 },
     link: { color: colors.accentPrimary, fontWeight: "700", fontSize: 13.5 },

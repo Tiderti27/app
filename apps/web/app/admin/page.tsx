@@ -7,7 +7,10 @@ import { useAuth } from "@/context/auth-context";
 import { useUserProfile } from "@/context/user-profile-context";
 import { useAdmin } from "@/hooks/use-admin";
 import { useAdminSpots } from "@/hooks/use-admin-spots";
+import { useAdminReports } from "@/hooks/use-admin-reports";
 import { AdminSpotEditor } from "@/components/admin-spot-editor";
+
+const REPORT_TARGET_LABEL: Record<string, string> = { spot: "Spot", rating: "Bewertung", photo: "Foto" };
 
 const ROLE_OPTIONS: UserRole[] = ["consumer", "creator", "business"];
 
@@ -53,6 +56,7 @@ function AdminContent() {
     updateSpot,
     deleteSpot,
   } = useAdminSpots();
+  const { reports, loading: reportsLoading, resolveReport } = useAdminReports();
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [creatingSpot, setCreatingSpot] = useState(false);
 
@@ -61,6 +65,35 @@ function AdminContent() {
       <div>
         <h1 className="page-title">Admin</h1>
         <p className="page-subtitle">Plattform-Übersicht: Spots, Läden, Creator-Bewerbungen und Nutzerverwaltung</p>
+      </div>
+
+      <div className="card panel">
+        <span className="panel-title">Offene Meldungen {reports.length > 0 ? `(${reports.length})` : ""}</span>
+        {!reportsLoading && reports.length === 0 && (
+          <p style={{ margin: 0, color: "var(--text-tertiary)", fontSize: 13.5 }}>Keine offenen Meldungen.</p>
+        )}
+        {reports.map((report) => (
+          <div key={report.id} className="data-row">
+            <div className="data-row-main">
+              <span className="data-row-title">
+                {REPORT_TARGET_LABEL[report.target_type]} · {report.spot_name}
+              </span>
+              <span className="data-row-meta">{report.reason}</span>
+              {report.photo_url && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={report.photo_url} alt="" style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover", marginTop: 6 }} />
+              )}
+            </div>
+            <div className="data-row-actions">
+              <button className="pill-button reject" onClick={() => resolveReport(report.id, "dismissed")}>
+                Verwerfen
+              </button>
+              <button className="pill-button accept" onClick={() => resolveReport(report.id, "resolved")}>
+                Erledigt
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="card panel">

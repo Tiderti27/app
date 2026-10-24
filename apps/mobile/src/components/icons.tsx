@@ -16,6 +16,14 @@ export function PinIcon({ size = 20, color }: IconProps) {
   );
 }
 
+export function FlagIcon({ size = 18, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M5 21V4m0 0h12l-2.5 4L17 12H5" stroke={color} {...STROKE} />
+    </Svg>
+  );
+}
+
 export function GiftIcon({ size = 18, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
