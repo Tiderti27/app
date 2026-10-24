@@ -48,7 +48,9 @@ const RATE_LIMIT_CHECK_SCRIPT = `
   setTimeout(function () {
     var text = (document.body && document.body.innerText || "").toLowerCase();
     if (text.indexOf("rate limit") !== -1 || text.indexOf("ratelimit") !== -1) {
-      window.ReactNativeWebView.postMessage("rate-limited");
+      window.ReactNativeWebView.postMessage("rate-limited:" + text.slice(0, 120));
+    } else {
+      window.ReactNativeWebView.postMessage("page-text:" + text.slice(0, 120));
     }
   }, 1500);
   true;
@@ -70,6 +72,8 @@ export function VideoEmbedModal({
   const styles = createStyles(colors);
   const directUri = directEmbedUri(platform, url);
   const [loadFailed, setLoadFailed] = useState(false);
+  const loadedUriInfo = `uri: ${directUri ?? "(kein direct embed, fallback-html)"}`;
+  const [debugInfo, setDebugInfo] = useState("noch kein Event");
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -100,16 +104,26 @@ export function VideoEmbedModal({
             style={styles.webview}
             allowsInlineMediaPlayback
             mediaPlaybackRequiresUserAction={false}
-            onError={() => setLoadFailed(true)}
-            onHttpError={() => setLoadFailed(true)}
+            onError={(event) => {
+              setDebugInfo(`onError: ${JSON.stringify(event.nativeEvent.description ?? event.nativeEvent)}`);
+              setLoadFailed(true);
+            }}
+            onHttpError={(event) => {
+              setDebugInfo(`onHttpError: status ${event.nativeEvent.statusCode}`);
+              setLoadFailed(true);
+            }}
             onMessage={(event) => {
-              if (event.nativeEvent.data === "rate-limited") setLoadFailed(true);
+              const data = event.nativeEvent.data;
+              setDebugInfo(data);
+              if (data.startsWith("rate-limited")) setLoadFailed(true);
             }}
             injectedJavaScript={RATE_LIMIT_CHECK_SCRIPT}
           />
         )}
 
         <Text style={styles.hint}>Lädt nicht? Oben rechts "Extern öffnen" nutzen.</Text>
+        <Text style={styles.debug}>{loadedUriInfo}</Text>
+        <Text style={styles.debug}>{debugInfo}</Text>
       </View>
     </Modal>
   );
@@ -143,6 +157,14 @@ function createStyles(colors: ColorPalette) {
     openExternal: { color: "#ffffff", fontWeight: "700", fontSize: 13 },
     webview: { flex: 1, backgroundColor: "#000000" },
     hint: { color: "#8a8a8a", fontSize: 11, textAlign: "center", paddingVertical: 10 },
+    debug: {
+      color: "#5a5a5a",
+      fontSize: 9,
+      textAlign: "center",
+      paddingHorizontal: 12,
+      paddingBottom: 10,
+      fontFamily: "monospace",
+    },
     failedBox: { flex: 1, alignItems: "center", justifyContent: "center", gap: 14, padding: 32 },
     failedTitle: { color: "#ffffff", fontSize: 16, fontWeight: "700", textAlign: "center" },
     failedText: { color: "#b5b5b5", fontSize: 13, textAlign: "center", lineHeight: 19 },
