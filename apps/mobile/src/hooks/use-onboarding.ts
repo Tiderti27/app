@@ -17,5 +17,10 @@ export function useOnboarding() {
     setHasSeenOnboarding(true);
   }
 
-  return { hasSeenOnboarding, markSeen };
+  async function reset() {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    setHasSeenOnboarding(false);
+  }
+
+  return { hasSeenOnboarding, markSeen, reset };
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import { Link, useRouter } from "expo-router";
@@ -12,6 +12,7 @@ import {
 } from "@spot/shared";
 import { useNearbySpots } from "@/hooks/use-nearby-spots";
 import { useSaves } from "@/hooks/use-saves";
+import { useDefaultViewMode } from "@/hooks/use-default-view-mode";
 import { useTheme } from "@/context/theme-context";
 import { CategoryIcon, PinIcon, SortIcon, UserIcon } from "@/components/icons";
 import { ScoreBadge } from "@/components/score-badge";
@@ -41,6 +42,14 @@ export default function MapScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>("map");
   const [sortMode, setSortMode] = useState<SortMode>("distance");
   const [openNowOnly, setOpenNowOnly] = useState(false);
+  const { defaultViewMode, loaded: defaultViewModeLoaded } = useDefaultViewMode();
+
+  useEffect(() => {
+    if (defaultViewModeLoaded) setViewMode(defaultViewMode);
+    // Nur beim ersten Laden anwenden -- danach soll der manuelle Karte/Liste-
+    // Umschalter des Nutzers nicht durch den gespeicherten Standard ueberschrieben werden.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultViewModeLoaded]);
 
   const { spots, location, loading, error, refresh } = useNearbySpots(activeCategory);
   const { spots: savedSpots } = useSaves();

@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import * as Location from "expo-location";
 import type { SpotCategory, SpotWithDistance } from "@spot/shared";
 import { supabase } from "@/lib/supabase";
-
-const DEFAULT_RADIUS_METERS = 5000;
+import { useSearchRadius } from "@/hooks/use-search-radius";
 
 interface NearbySpotsState {
   spots: SpotWithDistance[];
@@ -19,10 +18,12 @@ export function useNearbySpots(category: SpotCategory | null): NearbySpotsState 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const { radius, loaded: radiusLoaded } = useSearchRadius();
 
   const refresh = useCallback(() => setRefreshToken((token) => token + 1), []);
 
   useEffect(() => {
+    if (!radiusLoaded) return;
     let cancelled = false;
 
     async function load() {
@@ -45,7 +46,7 @@ export function useNearbySpots(category: SpotCategory | null): NearbySpotsState 
       const { data, error: rpcError } = await supabase.rpc("spots_nearby", {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
-        radius_meters: DEFAULT_RADIUS_METERS,
+        radius_meters: radius,
         category_filter: category,
       });
 
@@ -64,7 +65,7 @@ export function useNearbySpots(category: SpotCategory | null): NearbySpotsState 
     return () => {
       cancelled = true;
     };
-  }, [category, refreshToken]);
+  }, [category, refreshToken, radius, radiusLoaded]);
 
   return { spots, location, loading, error, refresh };
 }
