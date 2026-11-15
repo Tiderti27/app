@@ -22,7 +22,6 @@ export function PhotoManager({
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
 
   async function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
     // Erst in ein eigenstaendiges Array kopieren, DANACH das Input-Feld
@@ -31,23 +30,15 @@ export function PhotoManager({
     // Dateien ueberhaupt auslesen konnten.
     const list = Array.from(event.target.files ?? []);
     event.target.value = "";
-    setStatus(`onChange ausgelöst, ${list.length} Datei(en) erkannt.`);
 
-    if (list.length === 0 || !spotId) {
-      setStatus((s) => `${s} Abgebrochen (spotId: ${spotId ?? "fehlt"}).`);
-      return;
-    }
+    if (list.length === 0 || !spotId) return;
 
     setError(null);
     const [first, ...rest] = list;
     setQueue(rest);
-    setStatus((s) => `${s} Lese "${first.name}" (${first.type || "unbekannter Typ"})...`);
     try {
-      const dataUrl = await readFileAsDataUrl(first);
-      setStatus((s) => `${s} Gelesen, öffne Zuschneiden-Ansicht.`);
-      setCropSrc(dataUrl);
+      setCropSrc(await readFileAsDataUrl(first));
     } catch (err) {
-      setStatus((s) => `${s} Fehler beim Lesen.`);
       setError(err instanceof Error ? err.message : "Datei konnte nicht gelesen werden.");
     }
   }
@@ -72,33 +63,21 @@ export function PhotoManager({
     setUploading(true);
     setError(null);
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const authedUserId = sessionData.session?.user.id ?? "KEINE SESSION";
-    setStatus(`Zuschneiden übernommen (${blob.size} Bytes). Angemeldet als: ${authedUserId}. Lade hoch...`);
-
     try {
       const path = `${spotId}/${generateId()}.jpg`;
       const { error: uploadError } = await supabase.storage.from("spot-photos").upload(path, blob, {
         contentType: "image/jpeg",
       });
       if (uploadError) {
-        setStatus((s) => `${s} Storage-Upload fehlgeschlagen.`);
         setError(uploadError.message);
       } else {
-        setStatus((s) => `${s} Storage-Upload ok, speichere Foto-Liste...`);
         const { data } = supabase.storage.from("spot-photos").getPublicUrl(path);
         const updatedPhotos = [...photos, data.publicUrl];
         const { error: updateError } = await supabase.from("spots").update({ photos: updatedPhotos }).eq("id", spotId);
-        if (updateError) {
-          setStatus((s) => `${s} Speichern fehlgeschlagen.`);
-          setError(updateError.message);
-        } else {
-          setStatus((s) => `${s} Fertig.`);
-          onPhotosChange(updatedPhotos);
-        }
+        if (updateError) setError(updateError.message);
+        else onPhotosChange(updatedPhotos);
       }
     } catch (err) {
-      setStatus((s) => `${s} Unerwarteter Fehler.`);
       setError(err instanceof Error ? err.message : "Unbekannter Fehler beim Hochladen.");
     } finally {
       setUploading(false);
@@ -178,11 +157,6 @@ export function PhotoManager({
         </span>
       </label>
       {error && <span className="error-text">{error}</span>}
-      {status && (
-        <span className="form-section-hint" style={{ fontFamily: "monospace" }}>
-          Status: {status}
-        </span>
-      )}
 
       {cropSrc && <PhotoCropModal imageSrc={cropSrc} onConfirm={handleCropConfirm} onCancel={handleCropCancel} />}
     </>
