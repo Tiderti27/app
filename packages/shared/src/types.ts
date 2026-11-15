@@ -10,6 +10,8 @@ export interface User {
   avatar_url: string | null;
   role: UserRole;
   is_admin: boolean;
+  notify_promotions: boolean;
+  notify_saved_updates: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -263,6 +265,23 @@ export interface SpotClaim {
 export interface SpotClaimWithDetails extends SpotClaim {
   spot_name: string;
   username: string;
+}
+
+export type AccountDeletionStatus = "pending" | "resolved";
+
+export interface AccountDeletionRequest {
+  id: string;
+  user_id: string;
+  reason: string | null;
+  status: AccountDeletionStatus;
+  created_at: string;
+  resolved_at: string | null;
+  resolved_by: string | null;
+}
+
+export interface AccountDeletionRequestWithUser extends AccountDeletionRequest {
+  username: string;
+  email: string;
 }
 
 // Rueckgabe der RPC admin_business_overview()

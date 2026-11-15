@@ -77,6 +77,9 @@ function RootNavigator() {
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/index" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/change-password" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/delete-account" options={{ headerShown: false }} />
         <Stack.Screen name="spot/[id]" options={{ title: "Spot" }} />
       </Stack>
     </>

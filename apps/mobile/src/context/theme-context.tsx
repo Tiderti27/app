@@ -1,31 +1,32 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useColorScheme } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DARK_COLORS, LIGHT_COLORS, type ColorPalette, type ThemeMode } from "@spot/shared";
+import { DARK_COLORS, LIGHT_COLORS, type ColorPalette, type ThemeMode, type ThemePreference } from "@spot/shared";
 
 const STORAGE_KEY = "spot-theme-mode";
 
 interface ThemeContextValue {
   mode: ThemeMode;
+  preference: ThemePreference;
   colors: ColorPalette;
   toggleMode: () => void;
-  setMode: (mode: ThemeMode) => void;
+  setMode: (mode: ThemePreference) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
-  const [mode, setModeState] = useState<ThemeMode>(systemScheme === "light" ? "light" : "dark");
+  const [preference, setPreferenceState] = useState<ThemePreference>("system");
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
-      if (stored === "light" || stored === "dark") setModeState(stored);
+      if (stored === "light" || stored === "dark" || stored === "system") setPreferenceState(stored);
     });
   }, []);
 
-  function setMode(next: ThemeMode) {
-    setModeState(next);
+  function setMode(next: ThemePreference) {
+    setPreferenceState(next);
     AsyncStorage.setItem(STORAGE_KEY, next);
   }
 
@@ -33,11 +34,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setMode(mode === "dark" ? "light" : "dark");
   }
 
+  const mode: ThemeMode = preference === "system" ? (systemScheme === "light" ? "light" : "dark") : preference;
   const colors = mode === "light" ? LIGHT_COLORS : DARK_COLORS;
 
   const value = useMemo<ThemeContextValue>(
-    () => ({ mode, colors, toggleMode, setMode }),
-    [mode, colors]
+    () => ({ mode, preference, colors, toggleMode, setMode }),
+    [mode, preference, colors]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

@@ -9,6 +9,7 @@ import { useAdmin } from "@/hooks/use-admin";
 import { useAdminSpots } from "@/hooks/use-admin-spots";
 import { useAdminReports } from "@/hooks/use-admin-reports";
 import { useAdminSpotClaims } from "@/hooks/use-admin-spot-claims";
+import { useAdminAccountDeletions } from "@/hooks/use-admin-account-deletions";
 import { AdminSpotEditor } from "@/components/admin-spot-editor";
 
 const REPORT_TARGET_LABEL: Record<string, string> = { spot: "Spot", rating: "Bewertung", photo: "Foto" };
@@ -59,6 +60,7 @@ function AdminContent() {
   } = useAdminSpots();
   const { reports, loading: reportsLoading, resolveReport } = useAdminReports();
   const { claims, loading: claimsLoading, reviewClaim } = useAdminSpotClaims();
+  const { requests: deletionRequests, loading: deletionsLoading, resolveRequest } = useAdminAccountDeletions();
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [creatingSpot, setCreatingSpot] = useState(false);
 
@@ -88,6 +90,34 @@ function AdminContent() {
               </button>
               <button className="pill-button accept" onClick={() => reviewClaim(claim.id, true)}>
                 Freigeben
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card panel">
+        <span className="panel-title">Konto-Löschanfragen {deletionRequests.length > 0 ? `(${deletionRequests.length})` : ""}</span>
+        {!deletionsLoading && deletionRequests.length === 0 && (
+          <p style={{ margin: 0, color: "var(--text-tertiary)", fontSize: 13.5 }}>Keine offenen Löschanfragen.</p>
+        )}
+        {deletionRequests.length > 0 && (
+          <p style={{ margin: 0, color: "var(--text-tertiary)", fontSize: 12.5 }}>
+            Das eigentliche Löschen des Kontos muss manuell im Supabase-Dashboard (Authentication → Users) erfolgen —
+            hier nur als erledigt markieren, nachdem das geschehen ist.
+          </p>
+        )}
+        {deletionRequests.map((request) => (
+          <div key={request.id} className="data-row">
+            <div className="data-row-main">
+              <span className="data-row-title">
+                @{request.username} · {request.email}
+              </span>
+              {request.reason && <span className="data-row-meta">{request.reason}</span>}
+            </div>
+            <div className="data-row-actions">
+              <button className="pill-button accept" onClick={() => resolveRequest(request.id)}>
+                Erledigt
               </button>
             </div>
           </div>

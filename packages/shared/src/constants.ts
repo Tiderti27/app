@@ -11,6 +11,7 @@ export const SPOT_CATEGORIES: { value: SpotCategory; label: string }[] = [
 ];
 
 export type ThemeMode = "light" | "dark";
+export type ThemePreference = ThemeMode | "system";
 
 export interface ColorPalette {
   bgPrimary: string;

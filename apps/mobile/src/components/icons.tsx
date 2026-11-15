@@ -24,6 +24,53 @@ export function FlagIcon({ size = 18, color }: IconProps) {
   );
 }
 
+export function GearIcon({ size = 20, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={3} stroke={color} {...STROKE} />
+      <Path
+        d="M19.4 13a7.97 7.97 0 0 0 0-2l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1l-.4-2.5h-4l-.4 2.5a8 8 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.5a8 8 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a8 8 0 0 0 1.7 1l.4 2.5h4l.4-2.5a8 8 0 0 0 1.7-1l2.4 1 2-3.4z"
+        stroke={color}
+        {...STROKE}
+      />
+    </Svg>
+  );
+}
+
+export function ChevronRightIcon({ size = 16, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 6l6 6-6 6" stroke={color} {...STROKE} />
+    </Svg>
+  );
+}
+
+export function BellIcon({ size = 18, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9z" stroke={color} {...STROKE} />
+      <Path d="M10 19a2 2 0 0 0 4 0" stroke={color} {...STROKE} />
+    </Svg>
+  );
+}
+
+export function ShieldIcon({ size = 18, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke={color} {...STROKE} />
+    </Svg>
+  );
+}
+
+export function InfoIcon({ size = 18, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={9} stroke={color} {...STROKE} />
+      <Path d="M12 11v5.5M12 7.5v.01" stroke={color} {...STROKE} />
+    </Svg>
+  );
+}
+
 export function GiftIcon({ size = 18, color }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

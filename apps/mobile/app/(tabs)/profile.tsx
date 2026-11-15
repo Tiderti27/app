@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { ColorPalette, UserRole } from "@spot/shared";
 import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/theme-context";
@@ -7,10 +8,12 @@ import { supabase } from "@/lib/supabase";
 import { ActivitySection } from "@/components/activity-section";
 import { CreatorPanel } from "@/components/creator-panel";
 import { CreatorApplicationSection } from "@/components/creator-application-section";
+import { GearIcon } from "@/components/icons";
 
 export default function ProfileScreen() {
-  const { session, signOut } = useAuth();
-  const { colors, mode, toggleMode } = useTheme();
+  const { session } = useAuth();
+  const { colors } = useTheme();
+  const router = useRouter();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [username, setUsername] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
@@ -35,6 +38,9 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
+        <Pressable style={styles.settingsButton} onPress={() => router.push("/settings")}>
+          <GearIcon size={18} color={colors.textSecondary} />
+        </Pressable>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{(username ?? session?.user.email ?? "?").charAt(0).toUpperCase()}</Text>
         </View>
@@ -42,28 +48,11 @@ export default function ProfileScreen() {
         <Text style={styles.text}>{session?.user.email}</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Darstellung</Text>
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Helles Design</Text>
-          <Switch
-            value={mode === "light"}
-            onValueChange={toggleMode}
-            trackColor={{ false: colors.border, true: colors.accentPrimary }}
-            thumbColor="#ffffff"
-          />
-        </View>
-      </View>
-
       <ActivitySection colors={colors} />
 
       {role === "creator" && <CreatorPanel colors={colors} />}
 
       {role === "consumer" && <CreatorApplicationSection colors={colors} />}
-
-      <Pressable style={styles.button} onPress={signOut}>
-        <Text style={styles.buttonText}>Abmelden</Text>
-      </Pressable>
     </ScrollView>
   );
 }
@@ -72,7 +61,20 @@ function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bgPrimary },
     content: { padding: 24, paddingBottom: 40, gap: 24 },
-    header: { alignItems: "center", gap: 6, marginTop: 12 },
+    header: { alignItems: "center", gap: 6, marginTop: 12, position: "relative" },
+    settingsButton: {
+      position: "absolute",
+      right: 0,
+      top: -4,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.bgCard,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     avatar: {
       width: 64,
       height: 64,
@@ -85,35 +87,5 @@ function createStyles(colors: ColorPalette) {
     avatarText: { color: "#ffffff", fontSize: 24, fontWeight: "800" },
     title: { color: colors.textPrimary, fontSize: 18, fontWeight: "700" },
     text: { color: colors.textSecondary },
-    section: { gap: 10 },
-    sectionLabel: {
-      color: colors.textSecondary,
-      fontSize: 12,
-      fontWeight: "700",
-      letterSpacing: 0.04,
-      textTransform: "uppercase",
-    },
-    row: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      backgroundColor: colors.bgCard,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-    },
-    rowLabel: { color: colors.textPrimary, fontSize: 14, fontWeight: "600" },
-    button: {
-      alignSelf: "center",
-      backgroundColor: colors.bgCard,
-      borderColor: colors.border,
-      borderWidth: 1,
-      borderRadius: 10,
-      paddingHorizontal: 20,
-      paddingVertical: 12,
-    },
-    buttonText: { color: colors.scoreLow, fontWeight: "700" },
   });
 }
