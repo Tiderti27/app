@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Expo
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+apps/web/tsconfig.tsbuildinfo
+packages/shared/dist/
+
+# Build output
+dist/
+build/
+
+# Supabase
+supabase/.branches/
+supabase/.temp/
+
+# OS / editor
+.DS_Store
+*.log
+.vscode/
+.idea/

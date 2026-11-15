@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Spot",
+    "slug": "spot",
+    "scheme": "spot",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0f0f14",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.spot.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Spot zeigt dir Orte in deiner Naehe auf der Karte."
+      }
+    },
+    "android": {
+      "package": "com.spot.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Spot zeigt dir Orte in deiner Naehe auf der Karte."
+        }
+      ],
+      "expo-status-bar"
+    ]
+  }
+}
