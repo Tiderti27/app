@@ -8,9 +8,12 @@ export function useAdminSpotClaims() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    // "users!user_id" ist noetig, weil spot_claims ZWEI Fremdschluessel zu
+    // users hat (user_id, reviewed_by) -- ohne die Angabe ist der Embed
+    // mehrdeutig und Postgrest antwortet mit 300 (Multiple Choices).
     const { data } = await supabase
       .from("spot_claims")
-      .select("*, spots(name), users(username)")
+      .select("*, spots(name), users!user_id(username)")
       .eq("status", "pending")
       .order("created_at", { ascending: true });
 

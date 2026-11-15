@@ -8,9 +8,12 @@ export function useAdminAccountDeletions() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    // "users!user_id" ist noetig, weil account_deletion_requests ZWEI
+    // Fremdschluessel zu users hat (user_id, resolved_by) -- ohne die Angabe
+    // ist der Embed mehrdeutig und Postgrest antwortet mit 300.
     const { data } = await supabase
       .from("account_deletion_requests")
-      .select("*, users(username, email)")
+      .select("*, users!user_id(username, email)")
       .eq("status", "pending")
       .order("created_at", { ascending: true });
 
